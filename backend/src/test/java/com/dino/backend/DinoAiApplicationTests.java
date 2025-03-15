@@ -1,10 +1,10 @@
-package com.dinoAI.dinoai;
+package com.dino.backend;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class DinoaiApplicationTests {
+class DinoAiApplicationTests {
 
 	@Test
 	void contextLoads() {

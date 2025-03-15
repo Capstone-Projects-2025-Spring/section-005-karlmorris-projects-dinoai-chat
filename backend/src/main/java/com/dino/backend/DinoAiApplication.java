@@ -1,13 +1,13 @@
-package com.dinoAI.dinoai;
+package com.dino.backend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class DinoaiApplication {
+public class DinoAiApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(DinoaiApplication.class, args);
+		SpringApplication.run(DinoAiApplication.class, args);
 	}
 
 }
