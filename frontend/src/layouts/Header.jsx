@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import Logo from "../assets/DinoAI.png";
+import Logo from "../assets/dinoAI.png";
 import AuthButtons from '../components/AuthButtons';
 import NavBar from '../components/NavBar';
 
