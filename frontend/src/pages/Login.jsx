@@ -34,9 +34,12 @@ export default function Login() {
               required
             />
           </div>
-          <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded">
+          <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded-full">
             Login
           </button>
+          <div className="text-center mt-4 text-gray-500">
+            <a href="/signup" className="text-gray-500 hover:underline">Or sign up</a>
+          </div>
         </form>
       </div>
     </div>
