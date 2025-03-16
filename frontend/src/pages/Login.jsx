@@ -1,4 +1,4 @@
-import loginBg from "../assets/LoginBackground3.jpg";
+import loginBg from "../assets/LoginBackground2.jpg";
 
 export default function Login() {
   return (
