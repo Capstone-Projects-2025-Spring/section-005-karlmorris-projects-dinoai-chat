@@ -3,17 +3,17 @@ import AppRoutes from "./AppRoutes";
 import Header from './layouts/Header';
 
 function App() {
-
   return (
-      <Router>
-        <div className="min-h-screen">
-          <Header />
-          <main>
-            <AppRoutes />
-          </main>
-        </div>
-      </Router>
-  )
+    <Router>
+      <div className="min-h-screen">
+        <Header />
+        <main>
+          <AppRoutes />
+        </main>
+      </div>
+    </Router>
+  );
 }
 
-export default App
+export default App;
+

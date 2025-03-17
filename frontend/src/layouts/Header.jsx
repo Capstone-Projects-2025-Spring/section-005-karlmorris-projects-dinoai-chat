@@ -4,8 +4,9 @@ import AuthButtons from '../components/AuthButtons';
 import NavBar from '../components/NavBar';
 
 export default function Header() {
+
     return (
-        <header className="w-full flex items-center p-4 bg-white border-b border-gray-300">
+        <header className="w-full flex items-center p-4 bg-transparent border-b border-gray-300">
 
             <div className="flex-shrink-0">
                 <NavLink 
@@ -17,7 +18,7 @@ export default function Header() {
                 </NavLink>
             </div>
 
-            <div className="flex flex-1 justify-end pr-4">
+            <div className="flex flex-auto justify-end pr-4">
                 <NavBar />
             </div>
 
