@@ -1,17 +1,17 @@
 package com.dino.backend.model;
 
+import jakarta.persistence.*; 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "dino_user")
-@Data //Lombok, for getters, setters, toString, equalsAndHashCode, etc.
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
