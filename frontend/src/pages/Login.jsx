@@ -39,7 +39,7 @@ export default function Login() {
   };
 
   const footerContent = (
-    <Link to="/signup" className="text-gray-500 hover:underline">
+    <Link to="/Signup" className="text-gray-500 hover:underline">
       Or sign up
     </Link>
   );
