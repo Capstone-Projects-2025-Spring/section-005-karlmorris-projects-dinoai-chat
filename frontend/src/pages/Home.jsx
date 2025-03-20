@@ -3,6 +3,8 @@ import LanguageSelector from "../components/LanguageSelector";
 
 
 export default function Home() {
+    const [language, setLanguage] = useState("English");
+
 
     const types = ["Travel", "Business", "Food", "Culture", "Health", "Technology", "Entertainment", "Education", "Sports", "Family"];
 
@@ -11,16 +13,14 @@ export default function Home() {
 
             <h1 className="text-5xl font-bold mt-2 md:mt-6">DinoAI</h1>
 
-            {/* Language Selector */}
+            {/* Language Selector /}
             <h2 className="text-lg font-semibold mt-4 md:mt-6">Language</h2>
-            <LanguageSelector />
-            
+            <LanguageSelector onLanguageChange={setLanguage}/>
 
-            {/* Conversation Themes */}
+            {/ Conversation Themes /}
             <ConversationThemes types={types} />
-            
 
-            {/* Chat Input */}
+            {/ Chat Input */}
             <div className="mt-8 md:mt-10 w-3/4">
             <input
                 type="text"
