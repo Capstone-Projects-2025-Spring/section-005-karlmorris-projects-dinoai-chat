@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function LanguageSelector({}) {
+export default function LanguageSelector({ onLanguageChange }) {
     const [selectedLanguage, setSelectedLanguage] = useState("English");
 
     const languageList = [
@@ -14,16 +14,22 @@ export default function LanguageSelector({}) {
         { language: "TEST LANGUAGE FOR NOW 114514 250", flag: ""},
     ];
 
+    const handleLanguageSelect = (e) => {
+        const newLanguage = e.target.value;
+        setSelectedLanguage(newLanguage);
+        onLanguageChange(newLanguage);
+    };
+
     return (
         <div className="mt-2 flex items-center space-x-2 border rounded-lg px-4 py-2 bg-gray-100 w-full max-w-[250px] md:max-w-[300px] lg:max-w-[350px]">
             <span className="text-lg md:text-xl">
                 {languageList.find((lang) => lang.language === selectedLanguage)?.flag || "🌍"}
             </span>
-            
+
             <select
                 className="bg-transparent text-gray-700 focus:outline-none flex-1 w-[125px] md:w-[150px] lg:w-[175px] truncate"
                 value={selectedLanguage}
-                onChange={(e) => setSelectedLanguage(e.target.value)}
+                onChange={handleLanguageSelect}
             >
                 {languageList.map((lang) => (
                     <option key={lang.language} value={lang.language} className="truncate">
