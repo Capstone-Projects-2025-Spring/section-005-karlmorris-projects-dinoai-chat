@@ -8,7 +8,6 @@ export default function NavBar() {
     const navList = [
         { title: 'Home', href: '/'},
         { title: 'Quizzes', href: '/quizzes' },
-        { title: 'Practice', href: '/practice' },
         { title: 'Vocabulary', href: '/vocabulary' },
     ];
 

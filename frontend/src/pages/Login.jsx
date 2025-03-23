@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import PageBackground from "../components/PageBackground";
+import loginBg from "../assets/LoginBackground2.jpg";
+import Button from "../components/Button";
 import FormContainer from "../components/FormContainer";
 import FormInput from "../components/FormInput";
-import Button from "../components/Button";
-import loginBg from "../assets/LoginBackground2.jpg";
+import PageBackground from "../components/PageBackground";
 
 export default function Login() {
   const navigate = useNavigate();
