@@ -16,8 +16,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "dino_user_id_seq")
-    @SequenceGenerator(name = "dino_user_id_seq", sequenceName = "dino_user_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id") 
     private Long userId;
 
     @Column(nullable = false, unique = true)

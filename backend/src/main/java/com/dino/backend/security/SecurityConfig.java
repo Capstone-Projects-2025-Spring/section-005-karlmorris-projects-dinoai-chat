@@ -3,19 +3,29 @@ package com.dino.backend.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+
 import com.dino.backend.repository.UserRepository;
 import com.dino.backend.model.User;
-import java.util.Arrays;
+
+import com.dino.backend.config.CorsProperties;
+
+import java.util.Optional;
 
 @Configuration
 @EnableWebSecurity
@@ -23,29 +33,51 @@ public class SecurityConfig {
 
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private JwtRequestFilter jwtRequestFilter;
+    
+    @Autowired
+    private CorsProperties corsProperties;
 
-    @SuppressWarnings("removal")
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors().and() // Enable CORS with custom configuration
-            .csrf().disable()
+            // Configure CORS with the customizer
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            
+            // Disable CSRF with the customizer
+            .csrf(csrf -> csrf.disable())
+            
+            // Configure request authorization with the lambda
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/test/**").permitAll()
                 .requestMatchers("/auth/signup", "/auth/login").permitAll()
                 .anyRequest().authenticated()
             )
-            .formLogin();
+            
+            // Configure session management with the customizer
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            );
+            
+        // Add JWT filter
+        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+            
         return http.build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST"));
-        configuration.setAllowCredentials(true);
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        
+        // Use the configured values
+        configuration.setAllowedOrigins(corsProperties.getAllowedOrigins());
+        configuration.setAllowedMethods(corsProperties.getAllowedMethods());
+        configuration.setAllowedHeaders(corsProperties.getAllowedHeaders());
+        configuration.setExposedHeaders(corsProperties.getExposedHeaders());
+        configuration.setAllowCredentials(corsProperties.isAllowCredentials());
+        
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
@@ -53,15 +85,37 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> {
-            User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+        return usernameOrEmail -> {
+            // Try to find by email first
+            Optional<User> userOptional = userRepository.findByEmail(usernameOrEmail);
+            
+            // If not found by email, try by username
+            if (userOptional.isEmpty()) {
+                userOptional = userRepository.findByUsername(usernameOrEmail);
+            }
+            
+            User user = userOptional.orElseThrow(() -> 
+                new UsernameNotFoundException("User not found with email or username: " + usernameOrEmail));
+            
             return org.springframework.security.core.userdetails.User
-                .withUsername(user.getUsername())
+                .withUsername(usernameOrEmail)  // Use the input value as the principal
                 .password(user.getPassword())
                 .roles("USER")
                 .build();
         };
+    }    
+    
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
+    }
+    
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService());
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
     }
 
     @Bean

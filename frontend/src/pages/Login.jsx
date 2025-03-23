@@ -45,18 +45,28 @@ export default function Login() {
         body: JSON.stringify({
           email: formData.email,
           password: formData.password
-        }),
-        credentials: "include"
+        })
       });
 
-      const result = await response.text();
-      console.log("Response:", response.status, result);
+      const data = await response.json();
+      console.log("Response:", response.status, data);
 
-      if (response.ok && result === "Login successful") {
+      if (response.ok && data.success) {
         console.log("✅ Login successful");
-        navigate("/"); // or /dashboard, depending on your app
+        
+        localStorage.setItem('token', data.token);
+        
+        localStorage.setItem('user', JSON.stringify({
+          userId: data.userId,
+          username: data.username,
+          email: data.email,
+          learningLanguage: data.learningLanguage,
+          nativeLanguage: data.nativeLanguage
+        }));
+        
+        navigate("/"); 
       } else {
-        setErrors({ general: result || "Invalid email or password" });
+        setErrors({ general: data.message || "Invalid email or password" });
       }
 
     } catch (error) {
