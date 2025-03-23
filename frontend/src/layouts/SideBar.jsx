@@ -1,51 +1,57 @@
-import { useState } from "react";
+// Sidebar.jsx
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { fetchAllSessions } from "../api";
 
 export default function Sidebar() {
-    const [isOpen, setIsOpen] = useState(false);
+    const [sessions, setSessions] = useState([]);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        fetchAllSessions()
+        .then((data) => {
+            setSessions(data);
+        })
+        .catch((error) => console.error("Error fetching sessions:", error));
+    }, []);
+
+    const handleSelectSession = (session) => {
+        navigate(`/chat/${session.session_id}`);
+    };
 
     return (
-        <div className="flex">
-            <div className="hidden md:block w-64 min-h-screen bg-gray-100 p-4">
-                <SidebarContent />
-            </div>
-
-            <button
-                className="md:hidden fixed top-4 left-4 z-50 bg-gray-200 p-2 rounded-lg shadow"
-                onClick={() => setIsOpen(true)}
-            >
-                ☰
-            </button>
-
-            {isOpen && (
-                <div className="fixed inset-0 z-50 flex">
-                    <div className="fixed inset-0 bg-black opacity-50" onClick={() => setIsOpen(false)}></div>
-
-                    <div className="w-64 min-h-screen bg-white shadow-lg p-4 relative z-50">
-                        <button
-                            className="absolute top-4 right-4 text-gray-500"
-                            onClick={() => setIsOpen(false)}
-                        >
-                            ✕
-                        </button>
-                        <SidebarContent />
-                    </div>
-                </div>
-            )}
+        <div className="drawer-side">
+            <label htmlFor="my-drawer" className="drawer-overlay"></label>
+            <ul className="menu bg-base-200 text-base-content p-4 w-80 min-h-full">
+                <h2 className="text-xl mb-4 font-bold">
+                    Conversation Logs
+                </h2>
+                {sessions.length === 0 ? (
+                <p>
+                    <span>No History</span>
+                </p>
+                ) : (
+                sessions.map((session) => (
+                    <li key={session.session_id}>
+                    <button
+                        onClick={() => handleSelectSession(session)}
+                        className="w-full text-left"
+                    >
+                        <div>
+                            <span className="font-bold">{session.session_topic}</span>
+                        </div>
+                        <div className="text-sm">
+                            {new Date(session.start_time).toLocaleString()}
+                        </div>
+                    </button>
+                    </li>
+                ))
+                )}
+            </ul>
         </div>
     );
 }
 
-// ✅ Sidebar 具体内容（抽离成组件，代码更简洁）
-function SidebarContent() {
-    return (
-        <ul className="space-y-4">
-            <li className="font-semibold text-lg">Chat History</li>
-            <li className="p-2">Recent Chat 1</li>
-            <li className="p-2">Recent Chat 2</li>
-            <li className="p-2">Recent Chat 3</li>
-        </ul>
-    );
-}
 
 
 

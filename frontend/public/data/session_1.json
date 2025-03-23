@@ -1,0 +1,52 @@
+
+    {
+        "session_id": 1,
+        "user_id": 1,
+        "start_time": "2025-03-20T18:00:00Z",
+        "end_time": "2025-03-20T18:30:00Z",
+        "language_used": "English",
+        "session_topic": "Travel",
+        "feedback_summary": "Good conversation",
+        "messages": [
+            {
+                "message_id": 101,
+                "session_id": 1,
+                "sender_type": "bot",
+                "content": "Hello, how can I help you with your travel plans?",
+                "timestamp": "2025-03-20T18:00:10Z",
+                "corrected_content": null
+            },
+            {
+                "message_id": 102,
+                "session_id": 1,
+                "sender_type": "user",
+                "content": "I'm planning a trip to Europe.",
+                "timestamp": "2025-03-20T18:00:20Z",
+                "corrected_content": null
+            },
+            {
+                "message_id": 103,
+                "session_id": 1,
+                "sender_type": "bot",
+                "content": "Great! Do you have any specific destinations in mind?",
+                "timestamp": "2025-03-20T18:01:00Z",
+                "corrected_content": null
+            },
+            {
+                "message_id": 104,
+                "session_id": 1,
+                "sender_type": "user",
+                "content": "I want to visit Paris and Rome.",
+                "timestamp": "2025-03-20T18:01:30Z",
+                "corrected_content": null
+            },
+            {
+                "message_id": 105,
+                "session_id": 1,
+                "sender_type": "bot",
+                "content": "That sounds exciting! I can suggest some popular attractions in both cities.",
+                "timestamp": "2025-03-20T18:02:00Z",
+                "corrected_content": null
+            }
+        ]
+    }

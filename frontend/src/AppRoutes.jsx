@@ -8,6 +8,7 @@ export default function AppRoutes() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/Signup" element={<Signup />} />
+            <Route path="/chat/:sessionId" element={<Home />} />
 
         </Routes>
     )

@@ -1,0 +1,52 @@
+{
+    "session_id": 2,
+    "user_id": 1,
+    "start_time": "2025-03-20T19:00:00Z",
+    "end_time": null,
+    "language_used": "Chinese",
+    "session_topic": "Business",
+    "feedback_summary": "Good",
+    "messages": [
+      {
+        "message_id": 201,
+        "session_id": 2,
+        "sender_type": "bot",
+        "content": "您好，请问我能如何帮助您解决商务问题？",
+        "timestamp": "2025-03-20T19:00:05Z",
+        "corrected_content": null
+      },
+      {
+        "message_id": 202,
+        "session_id": 2,
+        "sender_type": "user",
+        "content": "我想了解如何扩大公司的市场份额。",
+        "timestamp": "2025-03-20T19:00:15Z",
+        "corrected_content": null
+      },
+      {
+        "message_id": 203,
+        "session_id": 2,
+        "sender_type": "bot",
+        "content": "明白了，请问您能提供更多关于您公司的信息吗？",
+        "timestamp": "2025-03-20T19:00:30Z",
+        "corrected_content": null
+      },
+      {
+        "message_id": 204,
+        "session_id": 2,
+        "sender_type": "user",
+        "content": "我们是一家初创公司，正在寻求国内外扩展。",
+        "timestamp": "2025-03-20T19:01:00Z",
+        "corrected_content": null
+      },
+      {
+        "message_id": 205,
+        "session_id": 2,
+        "sender_type": "bot",
+        "content": "好的，我建议您先进行市场调研，并考虑建立合作伙伴关系。",
+        "timestamp": "2025-03-20T19:01:30Z",
+        "corrected_content": null
+      }
+    ]
+  }
+  
