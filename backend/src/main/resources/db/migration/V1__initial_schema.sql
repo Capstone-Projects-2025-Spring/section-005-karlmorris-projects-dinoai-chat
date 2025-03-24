@@ -1,6 +1,6 @@
 -- User Table
 CREATE TABLE dino_user (
-    user_id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+    user_id SERIAL PRIMARY KEY,
     username VARCHAR(255) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
@@ -9,12 +9,12 @@ CREATE TABLE dino_user (
     profile_pic_url VARCHAR(255),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_login TIMESTAMP,
-    reminder_interval INT UNSIGNED
+    reminder_interval INTEGER
 );
 
 -- Chat Session Table
 CREATE TABLE dino_chat_session (
-    session_id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+    session_id SERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
     start_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     end_time TIMESTAMP,
@@ -26,7 +26,7 @@ CREATE TABLE dino_chat_session (
 
 -- Message Table
 CREATE TABLE dino_message (
-    message_id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY, -- Use AUTO_INCREMENT
+    message_id SERIAL PRIMARY KEY,
     session_id BIGINT NOT NULL,
     sender_type VARCHAR(10) NOT NULL CHECK (sender_type IN ('user', 'bot')),
     content TEXT NOT NULL,
