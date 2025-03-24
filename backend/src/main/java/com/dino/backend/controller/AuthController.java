@@ -8,8 +8,11 @@ import com.dino.backend.repository.UserRepository;
 import com.dino.backend.security.JwtUtil;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -35,25 +38,49 @@ public class AuthController {
     private JwtUtil jwtUtil;
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody SignupRequest request) {
+public ResponseEntity<?> signup(@RequestBody SignupRequest request) {
+    try {
+        // Check if user already exists
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            return ResponseEntity.badRequest().body("Email already in use.");
+            return ResponseEntity.badRequest().body(Map.of("message", "Email already in use."));
         }
         
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            return ResponseEntity.badRequest().body("Username already taken.");
+            return ResponseEntity.badRequest().body(Map.of("message", "Username already taken."));
         }
         
+        // Create and save new user
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setLearningLanguage(request.getLearningLanguage());
         user.setNativeLanguage(request.getNativeLanguage());
-        userRepository.save(user);
+        user.setCreatedAt(LocalDateTime.now());
+        user = userRepository.save(user);
         
-        return ResponseEntity.ok("Signup successful!");
+        // Generate JWT token directly rather than attempting auto-login
+        String jwt = jwtUtil.generateToken(user.getUsername());
+        
+        // Create response with token and user info
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", jwt);
+        response.put("userId", user.getUserId());
+        response.put("username", user.getUsername());
+        response.put("email", user.getEmail());
+        response.put("learningLanguage", user.getLearningLanguage());
+        response.put("nativeLanguage", user.getNativeLanguage());
+        response.put("success", true);
+        response.put("message", "Signup successful!");
+        
+        return ResponseEntity.ok(response);
+    } catch (Exception e) {
+        // Log the exception
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("message", "An error occurred during signup. Please try again later."));
     }
+}
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
