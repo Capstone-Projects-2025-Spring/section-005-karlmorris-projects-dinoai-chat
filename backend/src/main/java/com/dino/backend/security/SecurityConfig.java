@@ -51,8 +51,7 @@ public class SecurityConfig {
             
             // Configure request authorization with the lambda
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/test/**").permitAll()
-                .requestMatchers("/auth/signup", "/auth/login").permitAll()
+                .requestMatchers("/api/test", "/auth/signup", "/auth/login").permitAll()
                 .anyRequest().authenticated()
             )
             
