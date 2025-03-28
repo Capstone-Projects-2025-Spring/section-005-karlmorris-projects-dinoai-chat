@@ -11,7 +11,7 @@ export default function Header() {
 
             <div className="flex-shrink-0 flex">
                 <ToolTip text="Open Conversation History" position="right">
-                    <label htmlFor="my-drawer" className="drawer-button btn">
+                    <label htmlFor="my-drawer" className="drawer-button btn btn-ghost">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
@@ -29,7 +29,7 @@ export default function Header() {
                     </label>
                 </ToolTip>
                 <NavLink 
-                className="flex items-center space-x-2" 
+                className="flex items-center space-x-2 ml-1"
                 key='home'
                 to='/'>
                     <img src={Logo} alt="DinoAI Logo" className="w-10 h-10" />

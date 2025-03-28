@@ -78,41 +78,48 @@ export default function Login() {
   };
 
   const footerContent = (
-    <Link to="/Signup" className="text-gray-500 hover:underline">
-      Or sign up
-    </Link>
+      <div className="flex flex-col">
+        <Link to="/" className="text-gray-500 hover:underline">
+          Home Page
+        </Link>
+        <Link to="/signup" className="text-gray-500 hover:underline">
+          Or sign up
+        </Link>
+      </div>
   );
 
+  console.log("loginBg path:", loginBg);
+
   return (
-    <PageBackground backgroundImage={loginBg}>
-      <FormContainer title="Login" onSubmit={handleSubmit} footerContent={footerContent}>
-        <FormInput
-          label="Email"
-          type="email"
-          id="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          required
-          error={errors.email}
-          disabled={isLoading}
-        />
-        <FormInput
-          label="Password"
-          type="password"
-          id="password"
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-          error={errors.password}
-          disabled={isLoading}
-        />
-        <Button type="submit" fullWidth variant="primary" disabled={isLoading}>
-          {isLoading ? "Logging in..." : "Login"}
-        </Button>
-        {errors.general && <div className="text-red-500 text-sm mt-2">{errors.general}</div>}
-      </FormContainer>
-    </PageBackground>
+        <PageBackground backgroundImage={loginBg}>
+            <FormContainer title="Login" onSubmit={handleSubmit} footerContent={footerContent}>
+              <FormInput
+                  label="Email"
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  error={errors.email}
+                  disabled={isLoading}
+              />
+              <FormInput
+                  label="Password"
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  error={errors.password}
+                  disabled={isLoading}
+              />
+              <Button type="submit" fullWidth variant="primary" disabled={isLoading}>
+                {isLoading ? "Logging in..." : "Login"}
+              </Button>
+              {errors.general && <div className="text-red-500 text-sm mt-2">{errors.general}</div>}
+            </FormContainer>
+        </PageBackground>
   );
 }
