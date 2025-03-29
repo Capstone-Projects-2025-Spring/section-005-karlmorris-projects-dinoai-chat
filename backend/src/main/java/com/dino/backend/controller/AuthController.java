@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger; 
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,13 +23,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     @Autowired
     private UserRepository userRepository;
@@ -41,82 +41,62 @@ public class AuthController {
     @Autowired
     private JwtUtil jwtUtil;
 
-    /**
-     * Sign up a new user (no authentication required).
-     */
     @PostMapping("/signup")
-public ResponseEntity<?> signup(@RequestBody SignupRequest request) {
-    try {
-        // Check if user already exists
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Email already in use."));
-        }
+    public ResponseEntity<?> signup(@RequestBody SignupRequest request) {
+        try {
+            if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Email already in use."));
+            }
 
-        // Check for existing username
-        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Username already taken."));
+            if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Username already taken."));
+            }
+
+            User user = new User();
+            user.setUsername(request.getUsername());
+            user.setEmail(request.getEmail());
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+            user.setLearningLanguage(request.getLearningLanguage());
+            user.setNativeLanguage(request.getNativeLanguage());
+            user.setCreatedAt(LocalDateTime.now());
+            user = userRepository.save(user);
+
+            // Generate token using the user's username as the subject
+            String jwt = jwtUtil.generateToken(user.getUsername());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", jwt);
+            response.put("userId", user.getUserId());
+            response.put("username", user.getUsername());
+            response.put("email", user.getEmail());
+            response.put("learningLanguage", user.getLearningLanguage());
+            response.put("nativeLanguage", user.getNativeLanguage());
+            response.put("success", true);
+            response.put("message", "Signup successful!");
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Signup failed", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "An error occurred during signup. Please try again later."));
         }
-        
-        // Create and save new user
-        User user = new User();
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setLearningLanguage(request.getLearningLanguage());
-        user.setNativeLanguage(request.getNativeLanguage());
-        user.setCreatedAt(LocalDateTime.now());
-        user = userRepository.save(user);
-        
-        // Generate JWT token directly rather than attempting auto-login
-        String jwt = jwtUtil.generateToken(user.getUsername());
-        
-        // Create response with token and user info
-        Map<String, Object> response = new HashMap<>();
-        response.put("token", jwt);
-        response.put("userId", user.getUserId());
-        response.put("username", user.getUsername());
-        response.put("email", user.getEmail());
-        response.put("learningLanguage", user.getLearningLanguage());
-        response.put("nativeLanguage", user.getNativeLanguage());
-        response.put("success", true);
-        response.put("message", "Signup successful!");
-        
-        return ResponseEntity.ok(response);
-    } catch (Exception e) {
-        // Log the exception
-        e.printStackTrace();
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("message", "An error occurred during signup. Please try again later."));
     }
-}
 
-    /**
-     * Log in a user (no authentication required).
-     * Returns a JWT token and user info.
-     */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
-            // Attempt to authenticate with email/password
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getEmail(),
-                            request.getPassword()
-                    )
-            );
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
-            // If successful, load user from DB
             User user = userRepository.findByEmail(request.getEmail())
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            // Update last login time
             user.setLastLogin(LocalDateTime.now());
             userRepository.save(user);
 
-            // Generate JWT token using the username as the subject
+            // Generate token using the user's username as the subject
             String jwt = jwtUtil.generateToken(user.getUsername());
 
-            // Build response
             LoginResponse response = new LoginResponse();
             response.setToken(jwt);
             response.setUserId(user.getUserId());
@@ -130,7 +110,7 @@ public ResponseEntity<?> signup(@RequestBody SignupRequest request) {
             return ResponseEntity.ok(response);
 
         } catch (BadCredentialsException e) {
-            // Authentication failed
+            logger.error("Login failed - bad credentials", e);
             LoginResponse response = new LoginResponse();
             response.setSuccess(false);
             response.setMessage("Invalid credentials");
@@ -138,33 +118,68 @@ public ResponseEntity<?> signup(@RequestBody SignupRequest request) {
         }
     }
 
-    /**
-     * Return the current user’s profile (requires authentication).
-     * The JWT’s subject should match the User’s username in your DB.
-     */
     @GetMapping("/me")
-    public ResponseEntity<?> getMe(Authentication authentication) {
-        // If no user is authenticated, return 401
+    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+            logger.warn("Unauthorized access to /auth/me");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Unauthorized"));
         }
 
-        // The authentication’s name is typically the username
+        // authentication.getName() returns the username
         String username = authentication.getName();
-
-        // Find the user by username
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Build a map or return a DTO; here we simply return a map of fields
-        Map<String, Object> userData = new HashMap<>();
-        userData.put("userId", user.getUserId());
-        userData.put("username", user.getUsername());
-        userData.put("email", user.getEmail());
-        userData.put("learningLanguage", user.getLearningLanguage());
-        userData.put("nativeLanguage", user.getNativeLanguage());
-        userData.put("lastLogin", user.getLastLogin());
+        Map<String, Object> response = new HashMap<>();
+        response.put("userId", user.getUserId());
+        response.put("username", user.getUsername());
+        response.put("email", user.getEmail());
+        response.put("learningLanguage", user.getLearningLanguage());
+        response.put("nativeLanguage", user.getNativeLanguage());
+        response.put("lastLogin", user.getLastLogin());
 
-        return ResponseEntity.ok(userData);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/update")
+    public ResponseEntity<?> updateUser(@RequestBody Map<String, String> updates, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "Unauthorized"));
+        }
+
+        // Use the username from the authentication object
+        String username = authentication.getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        logger.info("Updating user: " + username + " with updates: " + updates);
+
+        try {
+            if (updates.containsKey("email")) {
+                String newEmail = updates.get("email");
+                user.setEmail(newEmail);
+            }
+            if (updates.containsKey("username")) {
+                String newUsername = updates.get("username");
+                user.setUsername(newUsername);
+            }
+            userRepository.save(user);
+        } catch (Exception e) {
+            logger.error("Failed to update user", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Failed to update email"));
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "User updated successfully");
+        response.put("userId", user.getUserId());
+        response.put("username", user.getUsername());
+        response.put("email", user.getEmail());
+        response.put("learningLanguage", user.getLearningLanguage());
+        response.put("nativeLanguage", user.getNativeLanguage());
+
+        return ResponseEntity.ok(response);
     }
 }
