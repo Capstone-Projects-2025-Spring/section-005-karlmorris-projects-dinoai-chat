@@ -9,7 +9,7 @@ export default function NavBar() {
         { title: 'Home', href: '/'},
         { title: 'Quizzes', href: '/quizzes' },
         { title: 'Vocabulary', href: '/vocabulary' },
-        {title: 'Profile', href: '/profile'},
+        { title: 'Profile', href: '/profile' },
     ];
 
     return (
