@@ -138,6 +138,7 @@ public class AuthController {
         response.put("learningLanguage", user.getLearningLanguage());
         response.put("nativeLanguage", user.getNativeLanguage());
         response.put("lastLogin", user.getLastLogin());
+        response.put("createdAt", user.getCreatedAt());
 
         return ResponseEntity.ok(response);
     }
@@ -165,11 +166,16 @@ public class AuthController {
                 String newUsername = updates.get("username");
                 user.setUsername(newUsername);
             }
+            if (updates.containsKey("password")) {
+                String newPassword = updates.get("password");
+                user.setPassword(passwordEncoder.encode(newPassword));
+            }
+            // Remove bio update if not defined in User
             userRepository.save(user);
         } catch (Exception e) {
             logger.error("Failed to update user", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Failed to update email"));
+                    .body(Map.of("message", "Failed to update profile"));
         }
 
         Map<String, Object> response = new HashMap<>();
@@ -181,5 +187,28 @@ public class AuthController {
         response.put("nativeLanguage", user.getNativeLanguage());
 
         return ResponseEntity.ok(response);
+    }
+    
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteAccount(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            logger.warn("Unauthorized attempt to delete account");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "Unauthorized"));
+        }
+
+        String username = authentication.getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        try {
+            userRepository.delete(user);
+            logger.info("User account deleted: " + username);
+            return ResponseEntity.ok(Map.of("message", "Account deleted successfully"));
+        } catch (Exception e) {
+            logger.error("Failed to delete account for user: " + username, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Failed to delete account"));
+        }
     }
 }
