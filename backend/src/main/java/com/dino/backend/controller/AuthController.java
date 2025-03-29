@@ -6,6 +6,11 @@ import com.dino.backend.dto.SignupRequest;
 import com.dino.backend.model.User;
 import com.dino.backend.repository.UserRepository;
 import com.dino.backend.security.JwtUtil;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,28 +45,50 @@ public class AuthController {
      * Sign up a new user (no authentication required).
      */
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody SignupRequest request) {
-        // Check for existing email
+public ResponseEntity<?> signup(@RequestBody SignupRequest request) {
+    try {
+        // Check if user already exists
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            return ResponseEntity.badRequest().body("Email already in use.");
+            return ResponseEntity.badRequest().body(Map.of("message", "Email already in use."));
         }
 
         // Check for existing username
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            return ResponseEntity.badRequest().body("Username already taken.");
+            return ResponseEntity.badRequest().body(Map.of("message", "Username already taken."));
         }
-
-        // Create the user
+        
+        // Create and save new user
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setLearningLanguage(request.getLearningLanguage());
         user.setNativeLanguage(request.getNativeLanguage());
-        userRepository.save(user);
-
-        return ResponseEntity.ok("Signup successful!");
+        user.setCreatedAt(LocalDateTime.now());
+        user = userRepository.save(user);
+        
+        // Generate JWT token directly rather than attempting auto-login
+        String jwt = jwtUtil.generateToken(user.getUsername());
+        
+        // Create response with token and user info
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", jwt);
+        response.put("userId", user.getUserId());
+        response.put("username", user.getUsername());
+        response.put("email", user.getEmail());
+        response.put("learningLanguage", user.getLearningLanguage());
+        response.put("nativeLanguage", user.getNativeLanguage());
+        response.put("success", true);
+        response.put("message", "Signup successful!");
+        
+        return ResponseEntity.ok(response);
+    } catch (Exception e) {
+        // Log the exception
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("message", "An error occurred during signup. Please try again later."));
     }
+}
 
     /**
      * Log in a user (no authentication required).

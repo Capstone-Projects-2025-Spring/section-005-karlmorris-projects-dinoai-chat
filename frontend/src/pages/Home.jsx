@@ -54,29 +54,31 @@ export default function Home() {
         };
 
     return (
-        <div className="bg-white flex-1 flex flex-col items-center justify-center py-8 md:py-6 px-8 md:px-12 mb-6">
+        <div className="flex-1 flex flex-col items-center justify-center py-8 md:py-6 px-8 md:px-12 mb-6">
             {!isChatStarted && (
-                <>
-                    <h1 className="text-5xl font-bold mt-2 md:mt-6">DinoAI</h1>
+                <div className="min-h-auto flex flex-col items-center justify-center py-12">
+                    <h1 className="text-5xl font-bold bg-gradient-to-r from-pink-400 to-violet-500 bg-clip-text text-transparent">
+                        DinoAI
+                    </h1>
 
-                    {/* Language Selector */}
-                    <h2 className="text-lg font-semibold mt-4 md:mt-6">Language</h2>
+                    <p className="text-gray-400 mt-2 text-base md:text-lg italic">
+                        "Your language journey starts here."
+                    </p>
+
+                    <h2 className="text-lg font-semibold mt-6">Language</h2>
                     <LanguageSelector onLanguageChange={setLanguage}/>
-
-                    {/* Conversation Themes */}
-                    <ConversationThemes types={types} />
-                </>
+                </div>
             )}
 
             {isChatStarted && (
                 <div className="w-full max-w-4xl mt-6 mb-24 items-center">
-                    <ChatWindow messages={messages} />
+                    <ChatWindow messages={messages}/>
                 </div>
             )}
 
             {/* Chat Input */}
             <div className="bottom-10 left-1/2 transform -translate-x-1/2 fixed w-3/4">
-                <ChatInput onInputSubmit={handleInputSubmit} />
+            <ChatInput onInputSubmit={handleInputSubmit} />
             </div>
         </div>
     );

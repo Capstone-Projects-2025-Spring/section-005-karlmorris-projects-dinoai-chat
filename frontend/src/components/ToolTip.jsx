@@ -1,4 +1,4 @@
-export default function ToolTip({ text, position = "right", children }) {
+export default function ToolTip({ text, position, children }) {
     return (
         <div className={`tooltip tooltip-${position}`}>
             <div className="tooltip-content">
