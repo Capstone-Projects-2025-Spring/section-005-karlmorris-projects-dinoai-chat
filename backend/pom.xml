@@ -92,7 +92,29 @@
         <scope>test</scope>
         <version>1.4.199</version>
       </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+
+
+        <dependency>
+            <groupId>com.google.genai</groupId>
+            <artifactId>google-genai</artifactId>
+            <version>0.1.0</version>
+        </dependency>
+
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>google-cloud-java</id>
+            <name>Google Cloud Java Packages</name>
+            <url>https://maven.pkg.dev/cloud-java/public</url>
+        </repository>
+    </repositories>
+
 
     <build>
         <plugins>

@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import { fetchChatSession } from "../api";
 import ChatInput from "../components/ChatInput";
 import ChatWindow from "../components/ChatWindow";
-import ConversationThemes from "../components/ConversationThemes";
 import LanguageSelector from "../components/LanguageSelector";
 
 export default function Home() {
@@ -48,7 +47,7 @@ export default function Home() {
                     { id: Date.now() + 1, content: simulatedReply, isUser: false },
                 ]);
                 resolve();
-            }, 
+            },
             500);
             });
         };
