@@ -1,54 +1,86 @@
 package com.dino.backend.service;
 
-import java.io.IOException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.dino.backend.dto.PromptRequest;
 import com.dino.backend.integration.gemini.GeminiAPI;
+import com.dino.backend.model.User;
+import com.dino.backend.repository.UserRepository;
+
+import java.io.IOException;
 
 @Service
 public class GeminiService {
 
     @Autowired
-    private GeminiAPI geminiAPI;  // Your centralized Gemini integration service
+    private GeminiAPI geminiAPI;
 
     @Autowired
     private PromptLoaderService promptLoaderService;
+    
+    @Autowired
+    private UserRepository userRepository;
 
     public String getGeminiResponse(PromptRequest request) {
         try {
-            // Load the static system prompt from file.
+            // Load the static system prompt from file
             String systemPrompt = promptLoaderService.loadSystemPrompt();
-    
-            // Extract dynamic context from the PromptRequest.
-            String language = request.getLanguageUsed();
-            String topic = (request.getSessionTopic() == null || request.getSessionTopic().isEmpty())
-                    ? "everyday conversation" : request.getSessionTopic();
-            String firstUserMessage = (request.getMessages() == null || request.getMessages().isEmpty())
-                    ? "" : request.getMessages().get(0).getContent();
-    
-            // Combine the system prompt with dynamic conversation context.
-            String combinedPrompt = systemPrompt + "\n"
-                    + "User is learning in: " + language + ".\n"
-                    + "Session Topic: " + topic + ".\n"
-                    + "First user message: " + firstUserMessage;
-    
-            // Get the raw response from Gemini
-            String fullResponse = geminiAPI.getResponse(combinedPrompt);
-    
-            // Basic parsing logic: pick the first meaningful line
-            String parsedResponse = fullResponse.lines()
-                    .filter(line -> line != null && !line.trim().isEmpty())
-                    .findFirst()
-                    .orElse("No meaningful response from Gemini.");
-    
-            return parsedResponse;
-    
+
+            // Extract the latest user message
+            String userMessage = "";
+            if (request.getMessages() != null && !request.getMessages().isEmpty()) {
+                // Get the latest user message with senderType = USER
+                for (int i = request.getMessages().size() - 1; i >= 0; i--) {
+                    PromptRequest.Message message = request.getMessages().get(i);
+                    if ("USER".equals(message.getSenderType())) {
+                        userMessage = message.getContent();
+                        break;
+                    }
+                }
+            }
+
+            // Fetch user data from database
+            User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + request.getUserId()));
+
+            // Build the JSON input to match the expected format
+            String jsonInput = String.format(
+                "{" +
+                "  \"userData\": {" +
+                "    \"UserID\": \"%s\"," +
+                "    \"Username\": \"%s\"," +
+                "    \"nativeLanguage\": \"%s\"," +
+                "    \"learningLanguage\": \"%s\"" +
+                "  }," +
+                "  \"chatData\": {" +
+                "    \"SessionTopic\": \"%s\"," +
+                "    \"userMessage\": \"%s\"" +
+                "  }" +
+                "}", 
+                user.getUserId(),
+                user.getUsername(),
+                user.getNativeLanguage(),
+                request.getLanguageUsed() != null ? request.getLanguageUsed() : user.getLearningLanguage(),
+                request.getSessionTopic() != null ? request.getSessionTopic() : "null",
+                userMessage
+            );
+
+            // Combine system prompt and user input
+            String fullPrompt = systemPrompt + "\n\n" + jsonInput;
+
+            // Get the raw response from Gemini as plain text
+            String fullResponse = geminiAPI.getResponse(fullPrompt);
+
+            // Return the entire response
+            return fullResponse;
+
         } catch (IOException e) {
             e.printStackTrace();
             return "Error loading system prompt: " + e.getMessage();
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            return "Error processing request: " + e.getMessage();
         }
     }
 }
