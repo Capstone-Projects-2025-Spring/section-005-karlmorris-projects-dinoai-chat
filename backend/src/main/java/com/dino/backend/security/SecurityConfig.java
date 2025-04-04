@@ -1,5 +1,7 @@
 package com.dino.backend.security;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,13 +21,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-
-import com.dino.backend.repository.UserRepository;
-import com.dino.backend.model.User;
-
 import com.dino.backend.config.CorsProperties;
-
-import java.util.Optional;
+import com.dino.backend.model.User;
+import com.dino.backend.repository.UserRepository;
 
 @Configuration
 @EnableWebSecurity
@@ -51,7 +49,7 @@ public class SecurityConfig {
             
             // Configure request authorization with the lambda
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/test", "/auth/signup", "/auth/login").permitAll()
+                .requestMatchers("/api/test", "/auth/signup", "/auth/login", "/api/sessions/**").permitAll()
                 .anyRequest().authenticated()
             )
             
