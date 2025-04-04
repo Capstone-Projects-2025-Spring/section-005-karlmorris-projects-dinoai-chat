@@ -20,7 +20,7 @@ public class ChatSession {
     @Column(name = "session_id")
     private Long sessionId;
 
-    // Each ChatSession is linked to a specific User (user_id in the table).
+   
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -40,7 +40,7 @@ public class ChatSession {
     @Column(name = "feedback_summary")
     private String feedbackSummary;
 
-    // A ChatSession can have many messages associated with it.
+    
     @OneToMany(mappedBy = "chatSession", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Message> messages;
 }

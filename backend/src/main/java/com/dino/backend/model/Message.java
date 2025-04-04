@@ -31,14 +31,7 @@ public abstract class Message {
     @Column(name = "timestamp")
     private LocalDateTime timestamp;
 
-    // The column "corrected_content" exists in the table, 
-    // but is primarily used by BotMessage. We keep it out of the base class 
-    // so only BotMessage has direct access. 
-    // If you want it in the abstract class, move it here and remove from BotMessage.
-
-    /**
-     * Optional method for editing message content, if needed.
-     */
+    
     public void editContent(String newContent) {
         this.content = newContent;
     }

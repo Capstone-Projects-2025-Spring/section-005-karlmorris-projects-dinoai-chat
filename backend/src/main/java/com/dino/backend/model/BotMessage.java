@@ -17,12 +17,11 @@ public class BotMessage extends Message {
     @Column(name = "corrected_content")
     private String correctedContent;
 
-    /**
-     * Example method for generating a correction, if needed.
-     * This is where you'd integrate with your AI logic.
-     */
+    
+
+    
     public String generateCorrection(String input) {
-        // AI logic to correct the input
+       
         return "Corrected version of: " + input;
     }
 }

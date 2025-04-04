@@ -12,8 +12,8 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public class UserMessage extends Message {
 
-    // If you don't need custom fields or constructors here, 
-    // just omit @NoArgsConstructor / @AllArgsConstructor
+    
+  
     public void sendMessage(String content) {
         this.setContent(content);
     }
