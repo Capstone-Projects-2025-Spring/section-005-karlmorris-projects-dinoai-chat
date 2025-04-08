@@ -61,7 +61,6 @@ public class AuthController {
             user.setCreatedAt(LocalDateTime.now());
             user = userRepository.save(user);
 
-            // Generate token using the user's username as the subject
             String jwt = jwtUtil.generateToken(user.getUsername());
 
             Map<String, Object> response = new HashMap<>();
@@ -94,7 +93,6 @@ public class AuthController {
             user.setLastLogin(LocalDateTime.now());
             userRepository.save(user);
 
-            // Generate token using the user's username as the subject
             String jwt = jwtUtil.generateToken(user.getUsername());
 
             LoginResponse response = new LoginResponse();
@@ -126,7 +124,6 @@ public class AuthController {
                     .body(Map.of("message", "Unauthorized"));
         }
 
-        // authentication.getName() returns the username
         String username = authentication.getName();
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -150,30 +147,34 @@ public class AuthController {
                     .body(Map.of("message", "Unauthorized"));
         }
 
-        // Use the username from the authentication object
         String username = authentication.getName();
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        logger.info("Updating user: " + username + " with updates: " + updates);
+        logger.info("🔧 Updating user '{}' with updates: {}", username, updates);
 
         try {
             if (updates.containsKey("email")) {
-                String newEmail = updates.get("email");
-                user.setEmail(newEmail);
+                user.setEmail(updates.get("email"));
             }
+
             if (updates.containsKey("username")) {
-                String newUsername = updates.get("username");
-                user.setUsername(newUsername);
+                user.setUsername(updates.get("username"));
             }
+
             if (updates.containsKey("password")) {
-                String newPassword = updates.get("password");
-                user.setPassword(passwordEncoder.encode(newPassword));
+                user.setPassword(passwordEncoder.encode(updates.get("password")));
             }
-            // Remove bio update if not defined in User
+
+            if (updates.containsKey("nativeLanguage")) {
+                user.setNativeLanguage(updates.get("nativeLanguage"));
+                logger.info("✅ Native language set to: {}", updates.get("nativeLanguage"));
+            }
+
             userRepository.save(user);
+            logger.info("✅ User saved: {}", user);
         } catch (Exception e) {
-            logger.error("Failed to update user", e);
+            logger.error("❌ Failed to update user profile", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Failed to update profile"));
         }
@@ -188,7 +189,7 @@ public class AuthController {
 
         return ResponseEntity.ok(response);
     }
-    
+
     @DeleteMapping("/delete")
     public ResponseEntity<?> deleteAccount(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -203,10 +204,10 @@ public class AuthController {
 
         try {
             userRepository.delete(user);
-            logger.info("User account deleted: " + username);
+            logger.info("🗑️ User account deleted: {}", username);
             return ResponseEntity.ok(Map.of("message", "Account deleted successfully"));
         } catch (Exception e) {
-            logger.error("Failed to delete account for user: " + username, e);
+            logger.error("❌ Failed to delete account for user: " + username, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Failed to delete account"));
         }
