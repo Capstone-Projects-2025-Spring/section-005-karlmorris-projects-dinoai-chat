@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/gemini")
-public class GeminiAPIControler {
+public class GeminiAPIController {
 
     private final GeminiAPIService geminiAPIService;
 
