@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { fetchChatSession } from "../api";
+import { fetchChatSession, sendPrompt } from "../api";
 import ChatInput from "../components/ChatInput";
 import ChatWindow from "../components/ChatWindow";
 import ConversationThemes from "../components/ConversationThemes";
@@ -37,21 +37,55 @@ export default function Home() {
         }
     }, [sessionId]);
 
-    const handleInputSubmit = (inputText) => {
+    const handleInputSubmit = async (inputText) => {
         setIsChatStarted(true);
-        return new Promise((resolve) => {
-            setMessages((prev) => [...prev, { id: Date.now(), content: inputText, isUser: true }]);
-            setTimeout(() => {
-                const simulatedReply = `Gemini API simulator：DO U MEAN "${inputText}"？ Language Selected: ${language}`;
-                setMessages((prev) => [
-                    ...prev,
-                    { id: Date.now() + 1, content: simulatedReply, isUser: false },
-                ]);
-                resolve();
-            }, 
-            500);
-            });
+      
+        // Show user message instantly
+        const userMessage = {
+          id: Date.now(),
+          content: inputText,
+          isUser: true,
         };
+        setMessages((prev) => [...prev, userMessage]);
+      
+        try {
+          // Call backend to get Gemini response
+          const res = await sendPrompt(inputText, language);
+      
+          const raw = res.candidates[0].content.parts[0].text;
+      
+          // Remove markdown wrapping (```json ... ```)
+          const cleaned = raw.replace(/```json\n?/, "").replace(/```/, "").trim();
+      
+          let aiMessageText = "Could not parse Gemini response.";
+          try {
+            const parsed = JSON.parse(cleaned);
+            aiMessageText = `${parsed.conversation}\n\n📝 ${parsed.feedback}`;
+          } catch (err) {
+            console.error("Failed to parse Gemini JSON:", err);
+            aiMessageText = raw; // fallback to raw text
+          }
+      
+          const aiMessage = {
+            id: Date.now() + 1,
+            content: aiMessageText,
+            isUser: false,
+          };
+      
+          setMessages((prev) => [...prev, aiMessage]);
+      
+        } catch (err) {
+          console.error("Gemini prompt failed:", err);
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: Date.now() + 2,
+              content: "Error talking to Gemini. Please try again.",
+              isUser: false,
+            },
+          ]);
+        }
+      };      
 
     return (
         <div className="flex-1 flex flex-col items-center justify-center py-8 md:py-6 px-8 md:px-12 mb-6">
