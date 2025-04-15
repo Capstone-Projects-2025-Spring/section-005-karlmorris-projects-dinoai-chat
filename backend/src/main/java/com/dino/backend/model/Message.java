@@ -2,7 +2,8 @@ package com.dino.backend.model;
 
 import java.time.LocalDateTime;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
@@ -27,7 +28,17 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class Message {
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.PROPERTY,
+    property = "senderType",
+    visible = true
+)
+@JsonSubTypes({
+    @JsonSubTypes.Type(value = UserMessage.class, name = "user"),
+    @JsonSubTypes.Type(value = BotMessage.class, name = "bot")
+})
+public class Message {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,7 +47,6 @@ public abstract class Message {
 
     @ManyToOne
     @JoinColumn(name = "session_id", nullable = false)
-    @JsonIgnore
     private ChatSession chatSession;
 
     @Column(name = "content")
@@ -45,8 +55,8 @@ public abstract class Message {
     @Column(name = "timestamp")
     private LocalDateTime timestamp;
 
-    
     public void editContent(String newContent) {
         this.content = newContent;
     }
 }
+
