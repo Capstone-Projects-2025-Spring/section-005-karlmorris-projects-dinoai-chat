@@ -2,13 +2,21 @@
 //all frontend fetch logic need to be stored in this file
 
 export const fetchChatSession = async (sessionId) => {
-    const response = await fetch(`/data/session_${sessionId}.json`);
+  const token = localStorage.getItem("token");
 
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return response.json();
+  const response = await fetch(`http://localhost:8080/api/messages/session/${sessionId}`, {
+    headers: {
+      "Authorization": `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch chat session`);
+  }
+
+  return response.json();
 };
+
 
 export const fetchAllSessions = async () => {
     const sessionIds = [1, 2]; 
@@ -26,7 +34,43 @@ export const fetchAllSessions = async () => {
 
 const API_BASE_URL = "http://localhost:8080";
 
-export const sendPrompt = async (message, language) => {
+export const startSession = async (userId, language, topic) => {
+  const response = await fetch(`${API_BASE_URL}/api/sessions/start?userId=${userId}&languageUsed=${language}&sessionTopic=${topic}`, {
+    method: "POST"
+  });
+
+  if (!response.ok) throw new Error("Failed to start session");
+
+  return response.json();
+};
+
+export const saveMessage = async (token, sessionId, content, senderType) => {
+  const response = await fetch(`${API_BASE_URL}/api/messages`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+     },
+    body: JSON.stringify({
+      chatSession: { sessionId },
+      content,
+      timestamp: new Date().toISOString(),
+      senderType: senderType.toLowerCase(), // user / bot
+    }),
+  });
+
+  if (!response.ok) throw new Error("Failed to save message");
+
+  console.log("Sending message payload:", {
+    chatSession: { sessionId },
+    content,
+    timestamp: new Date().toISOString(),
+    senderType: senderType.toLowerCase(),
+  });
+
+  return response.json();
+};
+
+export const sendPrompt = async ({ messages, language, sessionId, userId, topic }) => {
   const token = localStorage.getItem("token");
 
   const response = await fetch(`${API_BASE_URL}/api/prompts/generate`, {
@@ -36,21 +80,18 @@ export const sendPrompt = async (message, language) => {
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
-      sessionId: 1, // You can update this later if dynamic
-      userId: 1,    // Replace with actual user ID if needed
+      sessionId: sessionId || null,
+      userId,
       languageUsed: language,
-      messages: [
-        {
-          content: message,
-          senderType: "USER",
-        },
-      ],
+      sessionTopic: topic || "General",
+      messages,
     }),
   });
 
   if (!response.ok) {
     throw new Error(`Prompt failed! Status: ${response.status}`);
   }
-
   return response.json();
 };
+
+
