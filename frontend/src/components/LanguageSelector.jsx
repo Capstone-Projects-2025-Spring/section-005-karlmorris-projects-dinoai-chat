@@ -10,6 +10,7 @@ export default function LanguageSelector({ onLanguageChange }) {
         { language: "German", flag: "\uD83C\uDDE9\uD83C\uDDEA" },
         { language: "Italian", flag: "\uD83C\uDDEE\uD83C\uDDF9" },
         { language: "Chinese", flag: "\uD83C\uDDE8\uD83C\uDDF3" },
+        { language: "Korean", flag: "\uD83C\uDDF0\uD83C\uDDF7" },
         { language: "Japanese", flag: "\uD83C\uDDEF\uD83C\uDDF5" },
         { language: "TEST LANGUAGE FOR NOW 114514 250", flag: ""},
     ];
