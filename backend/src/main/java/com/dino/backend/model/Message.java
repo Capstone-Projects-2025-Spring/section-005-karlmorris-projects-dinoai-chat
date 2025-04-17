@@ -20,6 +20,7 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Table(name = "dino_message")
@@ -47,6 +48,7 @@ public class Message {
 
     @ManyToOne
     @JoinColumn(name = "session_id", nullable = false)
+    @JsonBackReference
     private ChatSession chatSession;
 
     @Column(name = "content")

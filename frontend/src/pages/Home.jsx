@@ -47,18 +47,16 @@ export default function Home() {
   useEffect(() => {
     if (sessionId) {
       fetchChatSession(sessionId)
-        .then((data) => {
-          const transformedMessages = data.messages.map((msg) => ({
-            id: msg.message_id,
+        .then(data => {
+          const msgs = data.messages.map(msg => ({
+            id: msg.messageId,
             content: msg.content,
-            isUser: msg.sender_type === "user",
+            isUser: msg.senderType === "user",
           }));
-          setMessages(transformedMessages);
+          setMessages(msgs);
           setIsChatStarted(true);
         })
-        .catch((error) => {
-          console.error("Fetch chat session error:", error);
-        });
+        .catch(console.error);
     }
   }, [sessionId]);
 
