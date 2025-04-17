@@ -1,13 +1,17 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
+  addFeedback,
+  endSession,
   fetchChatSession,
   saveMessage,
   sendPrompt,
   startSession,
-  endSession,
-  addFeedback,
 } from "../api";
+import bronze from '../assets/bronze.svg';
+import gold from '../assets/gold.svg';
+import poor from '../assets/poor.svg';
+import silver from '../assets/silver.svg';
 import ChatInput from "../components/ChatInput";
 import ChatWindow from "../components/ChatWindow";
 import LanguageSelector from "../components/LanguageSelector";
@@ -69,6 +73,13 @@ export default function Home() {
     return "Needs Improvement";
   };
 
+  const getBadge = () => {
+    if (score > 90) return gold;
+    if (score > 75) return silver;
+    if (score > 50) return bronze;
+    return poor;
+  };
+
   const handleInputSubmit = async (inputText) => {
     setIsChatStarted(true);
 
@@ -89,8 +100,10 @@ export default function Home() {
         currentSessionId = session.sessionId;
         setSessionIdState(currentSessionId);
 
-        await saveMessage(token, currentSessionId, inputText, "user");
+        /*await saveMessage(token, currentSessionId, inputText, "user");
+        await saveMessage(token, currentSessionId, botReplyContent, "bot");
         navigate(`/chat/${currentSessionId}`);
+        return;*/
       }
 
       // Prepare the full message array for the backend
@@ -135,10 +148,6 @@ export default function Home() {
       // Normalize the feedback text for comparison
       const normalizedFeedback = parsedResult.feedback.trim().toLowerCase();
       
-      
-
-
-
       let feedbackAlertType;
       if (normalizedFeedback.includes("no correction needed") || corrections.length === 0) {
         feedbackAlertType = "success";
@@ -166,7 +175,9 @@ export default function Home() {
       });
 
       // Save user and AI messages to DB
+      await saveMessage(token, currentSessionId, inputText, "user");
       await saveMessage(token, currentSessionId, botReplyContent, "bot");
+      //navigate(`/chat/${currentSessionId}`);
     } catch (err) {
       console.error("Gemini prompt failed:", err);
       setMessages((prev) => [
@@ -194,6 +205,7 @@ export default function Home() {
       await addFeedback(sessionIdState, summary);
       feedbackDialog.current?.close();
       navigate("/");
+      window.location.href = "/";
     } catch (err) {
       console.error("Error submitting feedback:", err);
     }
@@ -223,6 +235,7 @@ export default function Home() {
       {/* Feedback Modal */}
       <dialog ref={feedbackDialog} className="modal">
         <div className="modal-box">
+          <img src={getBadge()} alt="badge" className="mx-auto w-36 h-36 my-4" />
           <h3 className="font-bold text-lg">Your Score: {score}</h3>
           <p className="py-4">{getRating(score)}</p>
           <div className="modal-action">

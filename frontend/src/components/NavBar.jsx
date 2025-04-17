@@ -32,6 +32,11 @@ export default function NavBar() {
           <NavLink
             key={link.title}
             to={link.href}
+            onClick={() => {
+              if (link.href === "/") {
+                window.location.href = "/";
+              }
+            }}
             className={({ isActive }) =>
               `font-medium transition-colors duration-300 ease-in-out ${
                 isActive ? "text-black font-bold" : "text-gray-500 hover:text-black"
