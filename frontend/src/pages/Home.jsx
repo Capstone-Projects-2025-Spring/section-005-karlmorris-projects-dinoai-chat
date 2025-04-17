@@ -5,6 +5,7 @@ import {
   saveMessage,
   sendPrompt,
   startSession,
+  endSession,
 } from "../api";
 import ChatInput from "../components/ChatInput";
 import ChatWindow from "../components/ChatWindow";
@@ -163,6 +164,17 @@ export default function Home() {
     }
   };
 
+  const handleEndConversation = async () => {
+    if (!sessionIdState) return;
+    try {
+      await endSession(sessionIdState);
+      alert("Conversation ended and saved.");
+      navigate('/');
+    } catch (err) {
+      console.error("End session failed:", err);
+    }
+  };
+
   return (
     <div className="flex-1 flex flex-col items-center justify-center py-8 md:py-6 px-8 md:px-12 mb-6">
       {!isChatStarted && (
@@ -186,7 +198,7 @@ export default function Home() {
 
       {/* Chat Input */}
       <div className="bottom-10 left-1/2 transform -translate-x-1/2 fixed w-3/4">
-        <ChatInput onInputSubmit={handleInputSubmit} />
+        <ChatInput onInputSubmit={handleInputSubmit} onEndConversation={handleEndConversation}/>
       </div>
     </div>
   );

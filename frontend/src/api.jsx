@@ -89,4 +89,29 @@ export const sendPrompt = async ({ messages, language, sessionId, userId, topic 
   return response.json();
 };
 
+export const endSession = async (sessionId) => {
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("Not authenticated");
+
+  const resp = await fetch(
+    `${API_BASE_URL}/api/sessions/end/${sessionId}`,
+    { method: "POST", headers: { Authorization: `Bearer ${token}` } }
+  );
+  if (!resp.ok) throw new Error(`End session failed: ${resp.status}`);
+  return resp.json();
+};
+
+// new: addFeedback
+export const addFeedback = async (sessionId, feedback) => {
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("Not authenticated");
+
+  const resp = await fetch(
+    `${API_BASE_URL}/api/sessions/feedback/${sessionId}?feedback=${encodeURIComponent(feedback)}`,
+    { method: "POST", headers: { Authorization: `Bearer ${token}` } }
+  );
+  if (!resp.ok) throw new Error(`Add feedback failed: ${resp.status}`);
+  return resp.json();
+};
+
 
