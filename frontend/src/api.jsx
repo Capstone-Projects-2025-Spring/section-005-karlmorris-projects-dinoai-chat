@@ -3,33 +3,28 @@
 
 export const fetchChatSession = async (sessionId) => {
   const token = localStorage.getItem("token");
+  if (!token) throw new Error("Not authenticated");
 
-  const response = await fetch(`http://localhost:8080/api/messages/session/${sessionId}`, {
-    headers: {
-      "Authorization": `Bearer ${token}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch chat session`);
-  }
-
-  return response.json();
+  const resp = await fetch(
+    `${API_BASE_URL}/api/sessions/${sessionId}`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  if (!resp.ok) throw new Error(`Fetch session failed: ${resp.status}`);
+  return resp.json();
 };
 
-
 export const fetchAllSessions = async () => {
-    const sessionIds = [1, 2]; 
-    const sessions = await Promise.all(
-        sessionIds.map(async (id) => {
-            const response = await fetch(`/data/session_${id}.json`);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-    );
-    return sessions;
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("Not authenticated");
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  if (!user.userId) throw new Error("No user");
+
+  const resp = await fetch(
+    `${API_BASE_URL}/api/sessions/user/${user.userId}`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  if (!resp.ok) throw new Error(`Fetch sessions failed: ${resp.status}`);
+  return resp.json();
 };
 
 const API_BASE_URL = "http://localhost:8080";
