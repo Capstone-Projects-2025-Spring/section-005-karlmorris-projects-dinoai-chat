@@ -11,8 +11,6 @@ import ChatWindow from "../components/ChatWindow";
 import LanguageSelector from "../components/LanguageSelector";
 
 
-
-
 function parseCorrections(feedback = "") {
   
   const pattern = /\[(?!no correction needed\])(.*?)\]/gi;
@@ -79,6 +77,8 @@ export default function Home() {
         const session = await startSession(userId, language, topic);
         currentSessionId = session.sessionId;
         setSessionIdState(currentSessionId);
+
+        await saveMessage(token, currentSessionId, inputText, "user");
         navigate(`/chat/${currentSessionId}`);
       }
 
@@ -149,7 +149,6 @@ export default function Home() {
       setMessages((prev) => [...prev, aiMessage]);
 
       // Save user and AI messages to DB
-      await saveMessage(token, currentSessionId, inputText, "user");
       await saveMessage(token, currentSessionId, botReplyContent, "bot");
     } catch (err) {
       console.error("Gemini prompt failed:", err);
