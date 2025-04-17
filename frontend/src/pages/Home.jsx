@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   fetchChatSession,
@@ -6,6 +6,7 @@ import {
   sendPrompt,
   startSession,
   endSession,
+  addFeedback,
 } from "../api";
 import ChatInput from "../components/ChatInput";
 import ChatWindow from "../components/ChatWindow";
@@ -37,6 +38,8 @@ export default function Home() {
   const [sessionIdState, setSessionIdState] = useState(
     sessionId ? parseInt(sessionId) : null
   );
+  const [score, setScore] = useState(100);
+  const feedbackDialog = useRef(null);
 
   const storedUser = localStorage.getItem("user");
   const userId = storedUser ? JSON.parse(storedUser).userId : null;
@@ -58,6 +61,13 @@ export default function Home() {
         .catch(console.error);
     }
   }, [sessionId]);
+
+  const getRating = (sc) => {
+    if (sc > 90) return "Excellent";
+    if (sc > 75) return "Good";
+    if (sc > 50) return "Fair";
+    return "Needs Improvement";
+  };
 
   const handleInputSubmit = async (inputText) => {
     setIsChatStarted(true);
@@ -149,6 +159,12 @@ export default function Home() {
       // Add the AI message to the conversation
       setMessages((prev) => [...prev, aiMessage]);
 
+      setScore((prev) => {
+        const delta = feedbackAlertType === "error" ? -5 : 5;
+        const newScore = Math.min(100, Math.max(0, prev + delta));
+        return newScore;
+      });
+
       // Save user and AI messages to DB
       await saveMessage(token, currentSessionId, botReplyContent, "bot");
     } catch (err) {
@@ -164,14 +180,22 @@ export default function Home() {
     }
   };
 
-  const handleEndConversation = async () => {
+  const handleEndConversation = () => {
     if (!sessionIdState) return;
+    feedbackDialog.current?.showModal();
+  };
+
+  const handleSubmitFeedback = async () => {
     try {
+      // mark end time
       await endSession(sessionIdState);
-      alert("Conversation ended and saved.");
-      navigate('/');
+      // save feedback summary
+      const summary = `${getRating(score)} (${score})`;
+      await addFeedback(sessionIdState, summary);
+      feedbackDialog.current?.close();
+      navigate("/");
     } catch (err) {
-      console.error("End session failed:", err);
+      console.error("Error submitting feedback:", err);
     }
   };
 
@@ -195,6 +219,20 @@ export default function Home() {
           <ChatWindow messages={messages} />
         </div>
       )}
+
+      {/* Feedback Modal */}
+      <dialog ref={feedbackDialog} className="modal">
+        <div className="modal-box">
+          <h3 className="font-bold text-lg">Your Score: {score}</h3>
+          <p className="py-4">{getRating(score)}</p>
+          <div className="modal-action">
+            <button className="btn" onClick={handleSubmitFeedback}>
+              Close
+            </button>
+            
+          </div>
+        </div>
+      </dialog>
 
       {/* Chat Input */}
       <div className="bottom-10 left-1/2 transform -translate-x-1/2 fixed w-3/4">
