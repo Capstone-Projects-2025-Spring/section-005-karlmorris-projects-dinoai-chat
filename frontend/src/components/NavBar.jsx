@@ -65,7 +65,12 @@ export default function NavBar() {
                 <NavLink
                   to={link.href}
                   className="block px-4 py-2 text-gray-700 hover:bg-gray-200"
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => {
+                    if (link.href === "/") {
+                      window.location.href = "/";
+                    }
+                    setIsOpen(false);
+                  }}
                 >
                   {link.title}
                 </NavLink>
