@@ -120,7 +120,7 @@ export default function Profile() {
   };
 
   const handleDeleteAccount = async () => {
-    if (!window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) return;
+    if (!window.confirm("Are you sure you want to permanently delete your account?")) return;
 
     try {
       const token = localStorage.getItem("token");
@@ -224,7 +224,9 @@ export default function Profile() {
               <button
                 className="text-blue-500 hover:text-blue-600 font-semibold"
                 onClick={() =>
-                  isEditingPassword ? updateField("password", password, setIsEditingPassword) : setIsEditingPassword(true)
+                  isEditingPassword
+                    ? updateField("password", password, setIsEditingPassword)
+                    : setIsEditingPassword(true)
                 }
               >
                 {isEditingPassword ? "Save" : "Edit"}
@@ -267,13 +269,13 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Delete */}
-        <div className="flex justify-center mt-8">
+        {/* Subtle Delete Option */}
+        <div className="flex justify-end">
           <button
-            className="px-6 py-3 bg-red-600 text-white rounded-lg shadow-md hover:bg-red-700 transition-colors"
+            className="mt-2 text-sm text-gray-500 hover:text-gray-700 hover:underline"
             onClick={handleDeleteAccount}
           >
-            Delete Account
+            Request Account Deletion
           </button>
         </div>
       </div>

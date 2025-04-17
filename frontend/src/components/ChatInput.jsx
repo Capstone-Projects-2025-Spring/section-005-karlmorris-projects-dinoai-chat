@@ -1,7 +1,7 @@
 import { useState } from "react";
 import ToolTip from "./ToolTip";
 
-export default function ChatInput({ onInputSubmit }) {
+export default function ChatInput({ onInputSubmit, onEndConversation}) {
     const [input, setInput] = useState("");
     const [isSending, setIsSending] = useState(false);
 
@@ -59,6 +59,7 @@ export default function ChatInput({ onInputSubmit }) {
             <ToolTip text="End Conversation" position="top">
                 <button
                     className={`bg-red-400 btn btn-outline h-auto px-4 py-3 hover:bg-red-500 rounded-lg ${isSending ? "btn-disabled" : ""}`}
+                    onClick={onEndConversation}
                     disabled={isSending}
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">

@@ -1,16 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
+  addFeedback,
+  endSession,
   fetchChatSession,
   saveMessage,
   sendPrompt,
   startSession,
 } from "../api";
+import bronze from '../assets/bronze.svg';
+import gold from '../assets/gold.svg';
+import poor from '../assets/poor.svg';
+import silver from '../assets/silver.svg';
 import ChatInput from "../components/ChatInput";
 import ChatWindow from "../components/ChatWindow";
 import LanguageSelector from "../components/LanguageSelector";
-
-
 
 
 function parseCorrections(feedback = "") {
@@ -38,6 +42,8 @@ export default function Home() {
   const [sessionIdState, setSessionIdState] = useState(
     sessionId ? parseInt(sessionId) : null
   );
+  const [score, setScore] = useState(100);
+  const feedbackDialog = useRef(null);
 
   const storedUser = localStorage.getItem("user");
   const userId = storedUser ? JSON.parse(storedUser).userId : null;
@@ -47,20 +53,32 @@ export default function Home() {
   useEffect(() => {
     if (sessionId) {
       fetchChatSession(sessionId)
-        .then((data) => {
-          const transformedMessages = data.messages.map((msg) => ({
-            id: msg.message_id,
+        .then(data => {
+          const msgs = data.messages.map(msg => ({
+            id: msg.messageId,
             content: msg.content,
-            isUser: msg.sender_type === "user",
+            isUser: msg.senderType === "user",
           }));
-          setMessages(transformedMessages);
+          setMessages(msgs);
           setIsChatStarted(true);
         })
-        .catch((error) => {
-          console.error("Fetch chat session error:", error);
-        });
+        .catch(console.error);
     }
   }, [sessionId]);
+
+  const getRating = (sc) => {
+    if (sc > 90) return "Excellent";
+    if (sc > 75) return "Good";
+    if (sc > 50) return "Fair";
+    return "Needs Improvement";
+  };
+
+  const getBadge = () => {
+    if (score > 90) return gold;
+    if (score > 75) return silver;
+    if (score > 50) return bronze;
+    return poor;
+  };
 
   const handleInputSubmit = async (inputText) => {
     setIsChatStarted(true);
@@ -81,7 +99,11 @@ export default function Home() {
         const session = await startSession(userId, language, topic);
         currentSessionId = session.sessionId;
         setSessionIdState(currentSessionId);
+
+        /*await saveMessage(token, currentSessionId, inputText, "user");
+        await saveMessage(token, currentSessionId, botReplyContent, "bot");
         navigate(`/chat/${currentSessionId}`);
+        return;*/
       }
 
       // Prepare the full message array for the backend
@@ -126,10 +148,6 @@ export default function Home() {
       // Normalize the feedback text for comparison
       const normalizedFeedback = parsedResult.feedback.trim().toLowerCase();
       
-      
-
-
-
       let feedbackAlertType;
       if (normalizedFeedback.includes("no correction needed") || corrections.length === 0) {
         feedbackAlertType = "success";
@@ -150,9 +168,16 @@ export default function Home() {
       // Add the AI message to the conversation
       setMessages((prev) => [...prev, aiMessage]);
 
+      setScore((prev) => {
+        const delta = feedbackAlertType === "error" ? -5 : 5;
+        const newScore = Math.min(100, Math.max(0, prev + delta));
+        return newScore;
+      });
+
       // Save user and AI messages to DB
       await saveMessage(token, currentSessionId, inputText, "user");
       await saveMessage(token, currentSessionId, botReplyContent, "bot");
+      //navigate(`/chat/${currentSessionId}`);
     } catch (err) {
       console.error("Gemini prompt failed:", err);
       setMessages((prev) => [
@@ -163,6 +188,26 @@ export default function Home() {
           isUser: false,
         },
       ]);
+    }
+  };
+
+  const handleEndConversation = () => {
+    if (!sessionIdState) return;
+    feedbackDialog.current?.showModal();
+  };
+
+  const handleSubmitFeedback = async () => {
+    try {
+      // mark end time
+      await endSession(sessionIdState);
+      // save feedback summary
+      const summary = `${getRating(score)} (${score})`;
+      await addFeedback(sessionIdState, summary);
+      feedbackDialog.current?.close();
+      navigate("/");
+      window.location.href = "/";
+    } catch (err) {
+      console.error("Error submitting feedback:", err);
     }
   };
 
@@ -187,9 +232,24 @@ export default function Home() {
         </div>
       )}
 
+      {/* Feedback Modal */}
+      <dialog ref={feedbackDialog} className="modal">
+        <div className="modal-box">
+          <img src={getBadge()} alt="badge" className="mx-auto w-36 h-36 my-4" />
+          <h3 className="font-bold text-lg">Your Score: {score}</h3>
+          <p className="py-4">{getRating(score)}</p>
+          <div className="modal-action">
+            <button className="btn" onClick={handleSubmitFeedback}>
+              Close
+            </button>
+            
+          </div>
+        </div>
+      </dialog>
+
       {/* Chat Input */}
       <div className="bottom-10 left-1/2 transform -translate-x-1/2 fixed w-3/4">
-        <ChatInput onInputSubmit={handleInputSubmit} />
+        <ChatInput onInputSubmit={handleInputSubmit} onEndConversation={handleEndConversation}/>
       </div>
     </div>
   );

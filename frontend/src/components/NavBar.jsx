@@ -32,6 +32,11 @@ export default function NavBar() {
           <NavLink
             key={link.title}
             to={link.href}
+            onClick={() => {
+              if (link.href === "/") {
+                window.location.href = "/";
+              }
+            }}
             className={({ isActive }) =>
               `font-medium transition-colors duration-300 ease-in-out ${
                 isActive ? "text-black font-bold" : "text-gray-500 hover:text-black"
@@ -65,7 +70,12 @@ export default function NavBar() {
                 <NavLink
                   to={link.href}
                   className="block px-4 py-2 text-gray-700 hover:bg-gray-200"
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => {
+                    if (link.href === "/") {
+                      window.location.href = "/";
+                    }
+                    setIsOpen(false);
+                  }}
                 >
                   {link.title}
                 </NavLink>
