@@ -17,6 +17,8 @@ export default function Signup() {
     });
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
+    
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
     // Define Gemini-supported languages
     const supportedLanguages = [
@@ -68,8 +70,6 @@ export default function Signup() {
       { code: "vi", name: "Vietnamese" },
     ];
 
-
-
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({
@@ -109,7 +109,7 @@ export default function Signup() {
         setIsLoading(true);
 
         try {
-            const response = await fetch("http://localhost:8080/auth/signup", {
+            const response = await fetch(`${API_BASE_URL}/auth/signup`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -123,7 +123,7 @@ export default function Signup() {
                 console.log("✅ Signup successful", data);
 
                 // Automatically log the user in
-                const loginResponse = await fetch("http://localhost:8080/auth/login", {
+                const loginResponse = await fetch(`${API_BASE_URL}/auth/login`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"

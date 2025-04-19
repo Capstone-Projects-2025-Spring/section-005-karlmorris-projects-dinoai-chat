@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import GlassBackground from "../components/GlassBackground";
 
 export default function Profile() {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+  
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [createdAt, setCreatedAt] = useState("");
@@ -73,7 +75,7 @@ export default function Profile() {
         const token = localStorage.getItem("token");
         if (!token) throw new Error("No auth token found. Please log in.");
 
-        const response = await fetch("http://localhost:8080/auth/me", {
+        const response = await fetch(`${API_BASE_URL}/auth/me`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -95,14 +97,14 @@ export default function Profile() {
     };
 
     fetchUserProfile();
-  }, []);
+  }, [API_BASE_URL]);
 
   const updateField = async (field, value, callback) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No auth token found. Please log in.");
 
-      const response = await fetch("http://localhost:8080/auth/update", {
+      const response = await fetch(`${API_BASE_URL}/auth/update`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -126,7 +128,7 @@ export default function Profile() {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No auth token found. Please log in.");
 
-      const response = await fetch("http://localhost:8080/auth/delete", {
+      const response = await fetch(`${API_BASE_URL}/auth/delete`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

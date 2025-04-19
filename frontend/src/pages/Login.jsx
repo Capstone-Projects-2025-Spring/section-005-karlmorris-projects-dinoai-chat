@@ -14,6 +14,8 @@ export default function Login() {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,7 +39,7 @@ export default function Login() {
 
     try {
       console.log("Sending:", formData);
-      const response = await fetch("http://localhost:8080/auth/login", {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
