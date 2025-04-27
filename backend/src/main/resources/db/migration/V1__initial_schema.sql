@@ -35,6 +35,16 @@ CREATE TABLE dino_message (
     FOREIGN KEY (session_id) REFERENCES dino_chat_session(session_id) ON DELETE CASCADE
 );
 
+--Vocabulary Table
+CREATE TABLE dino_vocabulary_set (
+    voacb_id SERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    date DATE NOT NULL,
+    vocab_json TEXT NOT NULL,
+    UNIQUE(user_id, date)
+);
+
+
 -- Indexes for performance
 CREATE INDEX idx_user_username ON dino_user (username);
 CREATE INDEX idx_user_email ON dino_user (email);
