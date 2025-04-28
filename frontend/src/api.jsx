@@ -28,11 +28,20 @@ export const fetchAllSessions = async () => {
 
 
 export const startSession = async (userId, language, topic) => {
-  const response = await fetch(`${API_BASE_URL}/api/sessions/start?userId=${userId}&languageUsed=${language}&sessionTopic=${topic}`, {
-    method: "POST"
-  });
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("Not authenticated");
 
-  if (!response.ok) throw new Error("Failed to start session");
+  const response = await fetch(
+    `${API_BASE_URL}/api/sessions/start?userId=${userId}&languageUsed=${language}&sessionTopic=${topic}`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!response.ok) throw new Error(`Failed to start session: ${response.status}`);
 
   return response.json();
 };

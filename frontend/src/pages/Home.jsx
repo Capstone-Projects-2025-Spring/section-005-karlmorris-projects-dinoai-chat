@@ -16,14 +16,11 @@ import ChatInput from "../components/ChatInput";
 import ChatWindow from "../components/ChatWindow";
 import LanguageSelector from "../components/LanguageSelector";
 
-
 function parseCorrections(feedback = "") {
-
   const pattern = /\[(?!no correction needed\])(.*?)\]/gi;
   const matches = [];
   let match;
   while ((match = pattern.exec(feedback)) !== null) {
-
     const correction = match[1].trim();
     if (correction) {
       matches.push(correction);
@@ -99,11 +96,6 @@ export default function Home() {
         const session = await startSession(userId, language, topic);
         currentSessionId = session.sessionId;
         setSessionIdState(currentSessionId);
-
-        /*await saveMessage(token, currentSessionId, inputText, "user");
-        await saveMessage(token, currentSessionId, botReplyContent, "bot");
-        navigate(`/chat/${currentSessionId}`);
-        return;*/
       }
 
       // Prepare the full message array for the backend
@@ -177,14 +169,21 @@ export default function Home() {
       // Save user and AI messages to DB
       await saveMessage(token, currentSessionId, inputText, "user");
       await saveMessage(token, currentSessionId, botReplyContent, "bot");
-      //navigate(`/chat/${currentSessionId}`);
     } catch (err) {
-      console.error("Gemini prompt failed:", err);
+      console.error("Error in handleInputSubmit:", err);
+      let errorMessage = "⚠️ Error talking to DinoAI. Please try again.";
+      if (err.message.includes("Not authenticated") || err.message.includes("401")) {
+        errorMessage = "⚠️ You are not logged in. Please log in and try again.";
+      } else if (err.message.includes("403")) {
+        errorMessage = "⚠️ You do not have permission to start this session.";
+      } else if (err.message.includes("Failed to start session")) {
+        errorMessage = "⚠️ Could not start the chat session. Please try again.";
+      }
       setMessages((prev) => [
         ...prev,
         {
           id: Date.now() + 2,
-          content: "⚠️ Error talking to DinoAI. Please try again.",
+          content: errorMessage,
           isUser: false,
         },
       ]);
@@ -242,7 +241,6 @@ export default function Home() {
             <button className="btn" onClick={handleSubmitFeedback}>
               Close
             </button>
-
           </div>
         </div>
       </dialog>
