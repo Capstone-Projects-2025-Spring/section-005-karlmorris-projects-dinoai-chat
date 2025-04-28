@@ -2,11 +2,14 @@ package com.dino.backend.security;
 
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -29,6 +32,8 @@ import com.dino.backend.repository.UserRepository;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
+
     @Autowired
     private UserRepository userRepository;
     
@@ -40,6 +45,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        logger.info("Configuring SecurityFilterChain");
         http
             // Configure CORS with the customizer
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -49,7 +55,8 @@ public class SecurityConfig {
             
             // Configure request authorization with the lambda
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/test", "/auth/signup", "/auth/login", "/api/sessions/**", "/api/messages/**").permitAll()
+                .requestMatchers("/api/test", "/auth/signup", "/auth/login").permitAll()
+                .requestMatchers("/api/sessions/**", "/api/messages/**", "/api/prompts/**").authenticated()
                 .anyRequest().authenticated()
             )
             
@@ -59,6 +66,7 @@ public class SecurityConfig {
             );
             
         // Add JWT filter
+        logger.debug("Adding JwtRequestFilter before UsernamePasswordAuthenticationFilter");
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
             
         return http.build();
@@ -66,6 +74,7 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+        logger.info("Configuring CORS with allowed origins: {}", corsProperties.getAllowedOrigins());
         CorsConfiguration configuration = new CorsConfiguration();
         
         // Use the configured values
@@ -82,7 +91,9 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
+        logger.info("Configuring UserDetailsService");
         return usernameOrEmail -> {
+            logger.debug("Loading user by username or email: {}", usernameOrEmail);
             // Try to find by email first
             Optional<User> userOptional = userRepository.findByEmail(usernameOrEmail);
             
@@ -91,9 +102,12 @@ public class SecurityConfig {
                 userOptional = userRepository.findByUsername(usernameOrEmail);
             }
             
-            User user = userOptional.orElseThrow(() -> 
-                new UsernameNotFoundException("User not found with email or username: " + usernameOrEmail));
+            User user = userOptional.orElseThrow(() -> {
+                logger.error("User not found with email or username: {}", usernameOrEmail);
+                return new UsernameNotFoundException("User not found with email or username: " + usernameOrEmail);
+            });
             
+            logger.debug("User found: {}", user.getEmail());
             return org.springframework.security.core.userdetails.User
                 .withUsername(usernameOrEmail)  // Use the input value as the principal
                 .password(user.getPassword())
@@ -103,12 +117,15 @@ public class SecurityConfig {
     }    
     
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig, AuthenticationManagerBuilder authBuilder) throws Exception {
+        logger.info("Configuring AuthenticationManager with DaoAuthenticationProvider");
+        authBuilder.authenticationProvider(authenticationProvider());
         return authConfig.getAuthenticationManager();
     }
     
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
+        logger.info("Configuring DaoAuthenticationProvider");
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService());
         provider.setPasswordEncoder(passwordEncoder());
@@ -117,6 +134,7 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
+        logger.info("Configuring PasswordEncoder");
         return new BCryptPasswordEncoder();
     }
 }

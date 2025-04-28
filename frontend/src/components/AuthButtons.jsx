@@ -23,9 +23,7 @@ export default function AuthButtons() {
 
     return (
         <div className="flex gap-x-2">
-            <NavLink to="/upgrade">
-                <Button variant="primary">Upgrade</Button>
-            </NavLink>
+            
 
             {isLoggedIn ? (
                 <Button variant="secondary" onClick={handleLogout}>

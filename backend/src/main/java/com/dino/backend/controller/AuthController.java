@@ -41,6 +41,10 @@ public class AuthController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    public AuthController() {
+        logger.info("AuthController initialized");
+    }
+
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody SignupRequest request) {
         try {
@@ -83,16 +87,25 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+        logger.info("Received login request for email: {}", request.getEmail());
         try {
+            logger.debug("Authenticating user: {}", request.getEmail());
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+            logger.debug("Authentication successful for: {}", request.getEmail());
 
+            logger.debug("Fetching user from repository: {}", request.getEmail());
             User user = userRepository.findByEmail(request.getEmail())
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> {
+                    logger.error("User not found: {}", request.getEmail());
+                    return new RuntimeException("User not found");
+                });
 
+            logger.debug("Updating last login for user: {}", request.getEmail());
             user.setLastLogin(LocalDateTime.now());
             userRepository.save(user);
 
+            logger.debug("Generating JWT for user: {}", user.getUsername());
             String jwt = jwtUtil.generateToken(user.getUsername());
 
             LoginResponse response = new LoginResponse();
@@ -105,14 +118,21 @@ public class AuthController {
             response.setSuccess(true);
             response.setMessage("Login successful");
 
+            logger.info("Login successful for: {}", request.getEmail());
             return ResponseEntity.ok(response);
 
         } catch (BadCredentialsException e) {
-            logger.error("Login failed - bad credentials", e);
+            logger.error("Bad credentials for: {}", request.getEmail(), e);
             LoginResponse response = new LoginResponse();
             response.setSuccess(false);
             response.setMessage("Invalid credentials");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } catch (Exception e) {
+            logger.error("Login failed for: {}", request.getEmail(), e);
+            LoginResponse response = new LoginResponse();
+            response.setSuccess(false);
+            response.setMessage("Login error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
