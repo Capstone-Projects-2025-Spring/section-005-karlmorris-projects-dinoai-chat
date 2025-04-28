@@ -27,7 +27,7 @@ export default function NavBar() {
   return (
     <>
       {/* Desktop Nav */}
-      <nav className="hidden lg:flex items-center space-x-4">
+      <nav className="hidden md:flex flex-wrap items-center space-x-4 px-4">
         {navList.map((link) => (
           <NavLink
             key={link.title}
@@ -49,7 +49,7 @@ export default function NavBar() {
       </nav>
 
       {/* Mobile Dropdown */}
-      <div className="lg:hidden dropdown">
+      <div className="md:hidden dropdown w-full px-4">
         <label className="btn btn-ghost btn-sm swap swap-rotate">
           <input type="checkbox" onChange={() => setIsOpen(!isOpen)} checked={isOpen} />
           <svg className="swap-off fill-current" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 512 512">

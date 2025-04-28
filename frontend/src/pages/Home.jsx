@@ -18,12 +18,12 @@ import LanguageSelector from "../components/LanguageSelector";
 
 
 function parseCorrections(feedback = "") {
-  
+
   const pattern = /\[(?!no correction needed\])(.*?)\]/gi;
   const matches = [];
   let match;
   while ((match = pattern.exec(feedback)) !== null) {
-    
+
     const correction = match[1].trim();
     if (correction) {
       matches.push(correction);
@@ -141,13 +141,13 @@ export default function Home() {
 
       // Build AI message content
       const botReplyContent = parsedResult.conversation || "No conversation text.";
-      
+
       // Gather corrections from feedback using our helper function
       const corrections = parseCorrections(parsedResult.feedback);
-      
+
       // Normalize the feedback text for comparison
       const normalizedFeedback = parsedResult.feedback.trim().toLowerCase();
-      
+
       let feedbackAlertType;
       if (normalizedFeedback.includes("no correction needed") || corrections.length === 0) {
         feedbackAlertType = "success";
@@ -242,14 +242,16 @@ export default function Home() {
             <button className="btn" onClick={handleSubmitFeedback}>
               Close
             </button>
-            
+
           </div>
         </div>
       </dialog>
 
       {/* Chat Input */}
-      <div className="bottom-10 left-1/2 transform -translate-x-1/2 fixed w-3/4">
-        <ChatInput onInputSubmit={handleInputSubmit} onEndConversation={handleEndConversation}/>
+      <div className="fixed bottom-0 inset-x-0 p-4 bg-transluctant shadow-lg">
+        <div className="max-w-4xl mx-auto">
+          <ChatInput onInputSubmit={handleInputSubmit} onEndConversation={handleEndConversation} />
+        </div>
       </div>
     </div>
   );
