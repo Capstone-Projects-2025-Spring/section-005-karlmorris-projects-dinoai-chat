@@ -6,7 +6,7 @@ export default function Button({
     onClick,
     className = ""
   }) {
-    const baseClasses = "py-2 px-2 md:px-4 font-medium rounded-lg transition";
+    const baseClasses = "py-2 px-2 md:px-4 font-medium rounded-lg transition whitespace-nowrap";
     
     // Different variants
     const variants = {

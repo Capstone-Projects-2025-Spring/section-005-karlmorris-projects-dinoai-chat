@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
-import { checkAuthWithBackend } from "../utils/auth"; // ✅ update path as needed
+import { checkAuthWithBackend } from "../utils/auth";
 
 export default function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -48,33 +48,45 @@ export default function NavBar() {
         ))}
       </nav>
 
-      {/* Mobile Dropdown */}
-      <div className="md:hidden dropdown w-full px-4">
-        <label className="btn btn-ghost btn-sm swap swap-rotate">
-          <input type="checkbox" onChange={() => setIsOpen(!isOpen)} checked={isOpen} />
-          <svg className="swap-off fill-current" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 512 512">
-            <path d="M64,384H448V341.33H64Zm0-106.67H448V234.67H64ZM64,128v42.67H448V128Z" />
-          </svg>
-          <svg className="swap-on fill-current" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 512 512">
-            <polygon points="400 145.49 366.51 112 256 222.51 145.49 112 112 145.49 222.51 256 112 366.51 145.49 400 256 289.49 366.51 400 400 366.51 289.49 256 400 145.49" />
-          </svg>
-        </label>
+      {/* Mobile Nav Toggle Button */}
+      <div className="md:hidden px-4">
+        <button
+          onClick={() => setIsOpen((prev) => !prev)}
+          className="btn btn-ghost btn-sm"
+          aria-label="Toggle menu"
+        >
+          {isOpen ? (
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                clipRule="evenodd"
+              />
+            </svg>
+          ) : (
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M3 5h14a1 1 0 110 2H3a1 1 0 110-2zm0 4h14a1 1 0 110 2H3a1 1 0 110-2zm0 4h14a1 1 0 110 2H3a1 1 0 110-2z"
+                clipRule="evenodd"
+              />
+            </svg>
+          )}
+        </button>
 
+        {/* Mobile Dropdown Menu */}
         {isOpen && (
-          <ul
-            tabIndex={0}
-            className="dropdown-content menu bg-base-100 rounded-box shadow-lg border-1 border-gray-300 w-48 p-2 mt-2"
-          >
+          <ul className="absolute right-4 top-16 z-50 bg-white border border-gray-300 shadow-md rounded-md w-48 py-2">
             {navList.map((link) => (
               <li key={link.title}>
                 <NavLink
                   to={link.href}
-                  className="block px-4 py-2 text-gray-700 hover:bg-gray-200"
+                  className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
                   onClick={() => {
                     if (link.href === "/") {
                       window.location.href = "/";
                     }
-                    setIsOpen(false);
+                    setIsOpen(false); // close dropdown on click
                   }}
                 >
                   {link.title}
@@ -87,3 +99,4 @@ export default function NavBar() {
     </>
   );
 }
+

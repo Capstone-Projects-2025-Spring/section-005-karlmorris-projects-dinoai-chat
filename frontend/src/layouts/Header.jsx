@@ -9,7 +9,7 @@ export default function Header() {
     return (
         <header className="w-full flex items-center p-4 bg-transparent border-b border-gray-300">
 
-            <div className="flex-shrink-0 flex">
+            <div className="flex-shrink-0 flex items-center space-x-2">
                 <ToolTip text="Open Conversation History" position="right">
                     <label htmlFor="my-drawer" className="drawer-button btn btn-ghost">
                         <svg
@@ -37,11 +37,8 @@ export default function Header() {
                 </NavLink>
             </div>
 
-            <div className="flex flex-auto justify-end pr-4">
+            <div className="flex items-center ml-auto space-x-4">
                 <NavBar />
-            </div>
-
-            <div className="flex-shrink-0">
                 <AuthButtons />
             </div>
         </header>
