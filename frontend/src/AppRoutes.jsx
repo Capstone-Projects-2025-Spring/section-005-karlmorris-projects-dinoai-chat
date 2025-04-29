@@ -12,7 +12,13 @@ function isAuthenticated() {
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      <Route
+        path="/"
+        element={
+          isAuthenticated() ? <Home /> : <Navigate to="/login" replace />
+        }
+      />
+
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route
