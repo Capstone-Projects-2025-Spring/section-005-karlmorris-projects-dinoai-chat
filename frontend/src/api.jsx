@@ -15,8 +15,13 @@ export const fetchChatSession = async (sessionId) => {
 export const fetchAllSessions = async () => {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("Not authenticated");
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  if (!user.userId) throw new Error("No user");
+
+  const userResponse = await fetch(`${API_BASE_URL}/auth/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!userResponse.ok) throw new Error(`Fetch user failed: ${userResponse.status}`);
+  const user = await userResponse.json();
+  if (!user.userId) throw new Error("No user ID");
 
   const resp = await fetch(
     `${API_BASE_URL}/api/sessions/user/${user.userId}`,
@@ -25,7 +30,6 @@ export const fetchAllSessions = async () => {
   if (!resp.ok) throw new Error(`Fetch sessions failed: ${resp.status}`);
   return resp.json();
 };
-
 
 export const startSession = async (userId, language, topic) => {
   const token = localStorage.getItem("token");
@@ -42,8 +46,22 @@ export const startSession = async (userId, language, topic) => {
   );
 
   if (!response.ok) throw new Error(`Failed to start session: ${response.status}`);
-
   return response.json();
+};
+
+export const deleteSession = async (sessionId) => {
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("Not authenticated");
+
+  const response = await fetch(`${API_BASE_URL}/api/sessions/${sessionId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) throw new Error(`Failed to delete session: ${response.status}`);
+  return response; // No content expected (204)
 };
 
 export const saveMessage = async (token, sessionId, content, senderType) => {
