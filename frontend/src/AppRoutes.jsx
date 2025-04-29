@@ -3,6 +3,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Profile from './pages/Profile';
+import Vocab from './pages/Vocabulary';
 
 function isAuthenticated() {
   return !!localStorage.getItem("token");
@@ -29,6 +30,12 @@ export default function AppRoutes() {
         path="/profile"
         element={
           isAuthenticated() ? <Profile /> : <Navigate to="/login" replace />
+        }
+      />
+      <Route
+        path="/vocabulary"
+        element={
+          isAuthenticated() ? <Vocab /> : <Navigate to="/login" replace />
         }
       />
     </Routes>
