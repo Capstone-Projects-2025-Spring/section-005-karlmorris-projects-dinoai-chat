@@ -47,7 +47,7 @@ public class VocabularyController {
             return ResponseEntity.status(403).build(); // Forbidden
         }
 
-        VocabularySet vocabularySet = vocabularyService.getDailyVocab(userId);
+        VocabularySet vocabularySet = vocabularyService.getDailyVocab(userId, "English");
         return ResponseEntity.ok(vocabularySet);
     }
 }
