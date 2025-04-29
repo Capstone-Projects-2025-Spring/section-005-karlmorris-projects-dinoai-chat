@@ -70,12 +70,6 @@ DinoAI offers real-time grammar correction, vocabulary suggestions, and performa
 
 ### Accessibility Features
 
-👉 **Keyboard Navigation** - Full keyboard support for all interactive elements.
-
-👉 **Screen Reader Compatibility** - Proper ARIA attributes and semantic HTML elements.
-
-👉 **High Contrast Mode** - Color schemes that accommodate visual impairments.
-
 👉 **Responsive Design** - Optimized for both desktop and mobile devices.
 
 ## 🌐 Live Demo <a name="live-demo"></a>
