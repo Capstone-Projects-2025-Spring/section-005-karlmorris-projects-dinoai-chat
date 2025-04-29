@@ -1,9 +1,11 @@
 export const checkAuthWithBackend = async () => {
     const token = localStorage.getItem("token");
     if (!token) return false;
-  
+
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+
     try {
-      const res = await fetch("http://localhost:8080/auth/me", {
+      const res = await fetch(`${API_BASE_URL}/auth/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -17,4 +19,3 @@ export const checkAuthWithBackend = async () => {
       return false;
     }
   };
-  
