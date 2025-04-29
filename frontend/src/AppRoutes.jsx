@@ -1,8 +1,8 @@
-import { Route, Routes, Navigate } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import Home from './pages/Home';
 import Login from './pages/Login';
-import Signup from './pages/Signup';
 import Profile from './pages/Profile';
+import Signup from './pages/Signup';
 import Vocab from './pages/Vocabulary';
 
 function isAuthenticated() {
@@ -12,12 +12,7 @@ function isAuthenticated() {
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route
-        path="/"
-        element={
-          isAuthenticated() ? <Home /> : <Navigate to="/login" replace />
-        }
-      />
+      <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route

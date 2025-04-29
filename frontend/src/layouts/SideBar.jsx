@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchAllSessions, deleteSession } from "../api";
+import { deleteSession, fetchAllSessions } from "../api";
 
 export default function Sidebar() {
   const [sessions, setSessions] = useState([]);
@@ -8,7 +8,10 @@ export default function Sidebar() {
 
   useEffect(() => {
     fetchAllSessions()
-      .then(setSessions)
+      .then((fetchedSessions) => {
+        const sorted = fetchedSessions.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+        setSessions(sorted);
+      })
       .catch((error) => console.error("Error fetching sessions:", error));
   }, []);
 
