@@ -1,7 +1,7 @@
 # DinoAI - Interactive Language Learning Companion
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/ffffa9dd-dbe9-40fd-bc6e-47baba844fae" alt="dinoAI Logo" width="200">
+  <img src="https://github.com/user-attachments/assets/ffffa9dd-dbe9-40fd-bc6e-47baba844fae" alt="dinoAI Logo" width="400">
 </div>
 
 <div align="center">
@@ -70,12 +70,6 @@ DinoAI offers real-time grammar correction, vocabulary suggestions, and performa
 
 ### Accessibility Features
 
-👉 **Keyboard Navigation** - Full keyboard support for all interactive elements.
-
-👉 **Screen Reader Compatibility** - Proper ARIA attributes and semantic HTML elements.
-
-👉 **High Contrast Mode** - Color schemes that accommodate visual impairments.
-
 👉 **Responsive Design** - Optimized for both desktop and mobile devices.
 
 ## 🌐 Live Demo <a name="live-demo"></a>
@@ -86,20 +80,38 @@ Experience DinoAI in action:
 ## 📱 Screenshots <a name="screenshots"></a>
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/8af34bd7-89b4-437e-9c6f-ce63edddb541" width="366" alt="DinoAI Home Screen" />
-  <p><em>DinoAI home screen with language selection</em></p>
+  <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 20px;">
+    <div>
+      <img src="https://github.com/user-attachments/assets/ad7501af-f8b1-4082-8877-4ed35f4928d1" width="270" alt="DinoAI Login" />
+      <p><em>Secure user authentication</em></p>
+    </div>
+    <div>
+      <img src="https://github.com/user-attachments/assets/8af34bd7-89b4-437e-9c6f-ce63edddb541" width="270" alt="DinoAI Home Screen" />
+      <p><em>Home screen with language selection</em></p>
+    </div>
+  </div>
   
-  <img src="https://github.com/user-attachments/assets/e601c639-2e79-473e-80ac-c5315e02cf0f" width="366" alt="DinoAI Chat" />
-  <p><em>Interactive chat with real-time grammar feedback</em></p>
+  <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 20px;">
+    <div>
+      <img src="https://github.com/user-attachments/assets/e601c639-2e79-473e-80ac-c5315e02cf0f" width="270" alt="DinoAI Chat" />
+      <p><em>Interactive chat with grammar feedback</em></p>
+    </div>
+    <div>
+      <img src="https://github.com/user-attachments/assets/a939e282-f1a4-4bc7-852b-4968c653e7d7" width="270" alt="DinoAI Profile Page" />
+      <p><em>User profile management</em></p>
+    </div>
+  </div>
   
-  <img src="https://github.com/user-attachments/assets/a939e282-f1a4-4bc7-852b-4968c653e7d7" width="366" alt="DinoAI Profile Page" />
-  <p><em>User profile page for managing language preferences</em></p>
-  
-  <img src="https://github.com/user-attachments/assets/03401401-ee90-4376-9fa8-106a8b271e38" width="366" alt="DinoAI Conversation History" />
-  <p><em>Access your conversation history to track progress</em></p>
-  
-  <img src="https://github.com/user-attachments/assets/fbc44233-8db3-432a-8954-06671770ddad" width="366" alt="DinoAI Feedback Score" />
-  <p><em>Receive detailed feedback and scores after each conversation</em></p>
+  <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 20px;">
+    <div>
+      <img src="https://github.com/user-attachments/assets/03401401-ee90-4376-9fa8-106a8b271e38" width="270" alt="DinoAI Conversation History" />
+      <p><em>Conversation history tracking</em></p>
+    </div>
+    <div>
+      <img src="https://github.com/user-attachments/assets/fbc44233-8db3-432a-8954-06671770ddad" width="270" alt="DinoAI Feedback Score" />
+      <p><em>Performance feedback and scoring</em></p>
+    </div>
+  </div>
 </div>
 
 ## 🧑‍🚀 Contributors <a name="contributors"></a>
