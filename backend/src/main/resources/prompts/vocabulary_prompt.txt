@@ -1,0 +1,13 @@
+Analyze the following chat history to determine the user's language proficiency level (beginner, intermediate, or advanced) in their learning language:
+
+%s
+
+Based on the proficiency level, generate a JSON array of 10 vocabulary words with their definitions, tailored to the user's level. For example:
+
+Beginner: Simple, common words with basic definitions.
+
+Intermediate: Moderately complex words with clear definitions.
+
+Advanced: Sophisticated words with nuanced definitions.
+
+Return the result as a JSON array, where each item is an object with "word" and "definition" fields. Example: [ {"word": "hello", "definition": "A greeting used to say hi."}, {"word": "friend", "definition": "A person you like and trust."}, ... ]

@@ -4,15 +4,52 @@ export default function LanguageSelector({ onLanguageChange }) {
     const [selectedLanguage, setSelectedLanguage] = useState("English");
 
     const languageList = [
-        { language: "English", flag: "\uD83C\uDDEC\uD83C\uDDE7" },
-        { language: "Spanish", flag: "\uD83C\uDDEA\uD83C\uDDF8" },
-        { language: "French", flag: "\uD83C\uDDEB\uD83C\uDDF7" },
-        { language: "German", flag: "\uD83C\uDDE9\uD83C\uDDEA" },
-        { language: "Italian", flag: "\uD83C\uDDEE\uD83C\uDDF9" },
-        { language: "Chinese", flag: "\uD83C\uDDE8\uD83C\uDDF3" },
-        { language: "Korean", flag: "\uD83C\uDDF0\uD83C\uDDF7" },
-        { language: "Japanese", flag: "\uD83C\uDDEF\uD83C\uDDF5" },
-        { language: "TEST LANGUAGE FOR NOW 114514 250", flag: ""},
+      { code: "ar", language: "Arabic", flag: "🇦🇪" },
+      { code: "bn", language: "Bengali", flag: "🇧🇩" },
+      { code: "bg", language: "Bulgarian", flag: "🇧🇬" },
+      { code: "zh", language: "Chinese (Simplified & Traditional)", flag: "🇨🇳" },
+      { code: "hr", language: "Croatian", flag: "🇭🇷" },
+      { code: "cs", language: "Czech", flag: "🇨🇿" },
+      { code: "da", language: "Danish", flag: "🇩🇰" },
+      { code: "nl", language: "Dutch", flag: "🇳🇱" },
+      { code: "en", language: "English", flag: "🇬🇧" },
+      { code: "et", language: "Estonian", flag: "🇪🇪" },
+      { code: "fi", language: "Finnish", flag: "🇫🇮" },
+      { code: "fr", language: "French", flag: "🇫🇷" },
+      { code: "de", language: "German", flag: "🇩🇪" },
+      { code: "el", language: "Greek", flag: "🇬🇷" },
+      { code: "gu", language: "Gujarati", flag: "🇮🇳" },
+      { code: "he", language: "Hebrew", flag: "🇮🇱" },
+      { code: "hi", language: "Hindi", flag: "🇮🇳" },
+      { code: "hu", language: "Hungarian", flag: "🇭🇺" },
+      { code: "id", language: "Indonesian", flag: "🇮🇩" },
+      { code: "it", language: "Italian", flag: "🇮🇹" },
+      { code: "ja", language: "Japanese", flag: "🇯🇵" },
+      { code: "kn", language: "Kannada", flag: "🇮🇳" },
+      { code: "ko", language: "Korean", flag: "🇰🇷" },
+      { code: "lv", language: "Latvian", flag: "🇱🇻" },
+      { code: "lt", language: "Lithuanian", flag: "🇱🇹" },
+      { code: "ms", language: "Malay", flag: "🇲🇾" },
+      { code: "ml", language: "Malayalam", flag: "🇮🇳" },
+      { code: "mr", language: "Marathi", flag: "🇮🇳" },
+      { code: "no", language: "Norwegian", flag: "🇳🇴" },
+      { code: "pl", language: "Polish", flag: "🇵🇱" },
+      { code: "pt", language: "Portuguese", flag: "🇵🇹" },
+      { code: "ro", language: "Romanian", flag: "🇷🇴" },
+      { code: "ru", language: "Russian", flag: "🇷🇺" },
+      { code: "sr", language: "Serbian", flag: "🇷🇸" },
+      { code: "sk", language: "Slovak", flag: "🇸🇰" },
+      { code: "sl", language: "Slovenian", flag: "🇸🇮" },
+      { code: "es", language: "Spanish", flag: "🇪🇸" },
+      { code: "sw", language: "Swahili", flag: "🇰🇪" },
+      { code: "sv", language: "Swedish", flag: "🇸🇪" },
+      { code: "ta", language: "Tamil", flag: "🇮🇳" },
+      { code: "te", language: "Telugu", flag: "🇮🇳" },
+      { code: "th", language: "Thai", flag: "🇹🇭" },
+      { code: "tr", language: "Turkish", flag: "🇹🇷" },
+      { code: "uk", language: "Ukrainian", flag: "🇺🇦" },
+      { code: "ur", language: "Urdu", flag: "🇵🇰" },
+      { code: "vi", language: "Vietnamese", flag: "🇻🇳" },
     ];
 
     const handleLanguageSelect = (e) => {
@@ -23,17 +60,18 @@ export default function LanguageSelector({ onLanguageChange }) {
 
     return (
         <div className="mt-2 flex items-center space-x-2 border rounded-lg px-4 py-2 bg-white w-full max-w-[250px] md:max-w-[300px] lg:max-w-[350px]">
-            <span className="text-lg md:text-xl">
+            <span className="text-lg md:text-xl" aria-label={`Flag for ${selectedLanguage}`} role="img">
                 {languageList.find((lang) => lang.language === selectedLanguage)?.flag || "🌍"}
             </span>
 
             <select
-                className="bg-transparent text-gray-700 focus:outline-none flex-1 w-[125px] md:w-[150px] lg:w-[175px] truncate"
+                className="bg-transparent text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 w-[125px] md:w-[150px] lg:w-[175px] truncate"
                 value={selectedLanguage}
                 onChange={handleLanguageSelect}
+                aria-label="Select language"
             >
                 {languageList.map((lang) => (
-                    <option key={lang.language} value={lang.language} className="truncate">
+                    <option key={lang.code} value={lang.language} className="truncate">
                         {lang.language}
                     </option>
                 ))}
