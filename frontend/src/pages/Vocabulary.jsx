@@ -71,20 +71,15 @@ const Vocabulary = () => {
   }, []);
 
   const selectNextWord = () => {
-    const weights = vocabList.map(item => 1 / (item.score + 1));
-    const totalWeight = weights.reduce((acc, w) => acc + w, 0);
-    const rand = Math.random() * totalWeight;
-
-    let cumulative = 0;
-    for (let i = 0; i < vocabList.length; i++) {
-      cumulative += weights[i];
-      if (rand < cumulative) {
-        setCurrentIndex(i);
-        break;
-      }
+    const nextIndex = currentIndex + 1;
+    if (nextIndex < vocabList.length) {
+      setCurrentIndex(nextIndex);
+      setRevealed(false);
+    } else {
+      // Optionally loop back to the beginning or show a message
+      setCurrentIndex(0);
+      setRevealed(false);
     }
-
-    setRevealed(false);
   };
 
   if (loading) {
