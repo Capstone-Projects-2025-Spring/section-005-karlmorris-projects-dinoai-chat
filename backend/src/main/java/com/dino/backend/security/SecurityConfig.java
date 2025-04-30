@@ -1,5 +1,6 @@
 package com.dino.backend.security;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -36,96 +37,87 @@ public class SecurityConfig {
 
     @Autowired
     private UserRepository userRepository;
-    
+
     @Autowired
     private JwtRequestFilter jwtRequestFilter;
-    
+
     @Autowired
     private CorsProperties corsProperties;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         logger.info("Configuring SecurityFilterChain");
+
         http
-            // Configure CORS with the customizer
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            
-            // Disable CSRF with the customizer
             .csrf(csrf -> csrf.disable())
-            
-            // Configure request authorization with the lambda
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/test", "/auth/signup", "/auth/login").permitAll()
-                .requestMatchers("/api/sessions/**", "/api/messages/**", "/api/prompts/**").authenticated()
+                .requestMatchers(
+                    "/auth/signup",
+                    "/auth/login",
+                    "/api/test"
+                ).permitAll()
+                .requestMatchers(
+                    "/api/vocabulary/**",
+                    "/api/sessions/**",
+                    "/api/messages/**",
+                    "/api/prompts/**"
+                ).authenticated()
                 .anyRequest().authenticated()
             )
-            
-            // Configure session management with the customizer
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            );
-            
-        // Add JWT filter
-        logger.debug("Adding JwtRequestFilter before UsernamePasswordAuthenticationFilter");
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
-            
+
         return http.build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        logger.info("Configuring CORS with allowed origins: {}", corsProperties.getAllowedOrigins());
-        CorsConfiguration configuration = new CorsConfiguration();
-        
-        // Use the configured values
-        configuration.setAllowedOrigins(corsProperties.getAllowedOrigins());
-        configuration.setAllowedMethods(corsProperties.getAllowedMethods());
-        configuration.setAllowedHeaders(corsProperties.getAllowedHeaders());
-        configuration.setExposedHeaders(corsProperties.getExposedHeaders());
-        configuration.setAllowCredentials(corsProperties.isAllowCredentials());
-        
+        logger.info("Configuring CORS for localhost:5173");
+        CorsConfiguration config = new CorsConfiguration();
+        config.addAllowedOrigin("http://localhost:5173"); // Vite dev server
+        config.addAllowedMethod("*");
+        config.addAllowedHeader("*");
+        config.setAllowCredentials(true);
+        config.setExposedHeaders(List.of("Authorization"));
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        source.registerCorsConfiguration("/**", config);
         return source;
     }
 
     @Bean
     public UserDetailsService userDetailsService() {
-        logger.info("Configuring UserDetailsService");
         return usernameOrEmail -> {
-            logger.debug("Loading user by username or email: {}", usernameOrEmail);
-            // Try to find by email first
+            logger.debug("Loading user by: {}", usernameOrEmail);
             Optional<User> userOptional = userRepository.findByEmail(usernameOrEmail);
-            
-            // If not found by email, try by username
+
             if (userOptional.isEmpty()) {
                 userOptional = userRepository.findByUsername(usernameOrEmail);
             }
-            
+
             User user = userOptional.orElseThrow(() -> {
-                logger.error("User not found with email or username: {}", usernameOrEmail);
-                return new UsernameNotFoundException("User not found with email or username: " + usernameOrEmail);
+                logger.error("User not found: {}", usernameOrEmail);
+                return new UsernameNotFoundException("User not found: " + usernameOrEmail);
             });
-            
-            logger.debug("User found: {}", user.getEmail());
+
             return org.springframework.security.core.userdetails.User
-                .withUsername(usernameOrEmail)  // Use the input value as the principal
+                .withUsername(usernameOrEmail)
                 .password(user.getPassword())
                 .roles("USER")
                 .build();
         };
-    }    
-    
+    }
+
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig, AuthenticationManagerBuilder authBuilder) throws Exception {
-        logger.info("Configuring AuthenticationManager with DaoAuthenticationProvider");
         authBuilder.authenticationProvider(authenticationProvider());
         return authConfig.getAuthenticationManager();
     }
-    
+
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
-        logger.info("Configuring DaoAuthenticationProvider");
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService());
         provider.setPasswordEncoder(passwordEncoder());
@@ -134,7 +126,6 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        logger.info("Configuring PasswordEncoder");
         return new BCryptPasswordEncoder();
     }
 }

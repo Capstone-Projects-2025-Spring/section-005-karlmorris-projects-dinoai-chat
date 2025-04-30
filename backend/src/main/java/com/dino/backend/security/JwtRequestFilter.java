@@ -2,6 +2,8 @@ package com.dino.backend.security;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,6 +21,8 @@ import jakarta.servlet.http.HttpServletResponse;
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
+    private static final Logger logger = LoggerFactory.getLogger(JwtRequestFilter.class);
+
     @Autowired
     private UserDetailsService userDetailsService;
 
@@ -28,45 +32,50 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        
+
+        final String authorizationHeader = request.getHeader("Authorization");
+
+        String username = null;
+        String jwt = null;
+
         try {
-            final String authorizationHeader = request.getHeader("Authorization");
-    
-            String username = null;
-            String jwt = null;
-    
             if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
                 jwt = authorizationHeader.substring(7);
+                logger.info("🛡️ Received JWT: {}", jwt);
+
                 try {
                     username = jwtUtil.extractUsername(jwt);
+                    logger.info("🔍 Extracted username from token: {}", username);
                 } catch (Exception e) {
-                    logger.error("JWT token validation failed", e);
+                    logger.error("❌ Failed to extract username from JWT", e);
                 }
             }
-    
+
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 try {
-                    UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-                    
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    logger.info("✅ Loaded user details for: {}", username);
+
                     if (jwtUtil.validateToken(jwt, userDetails)) {
                         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                                 userDetails, null, userDetails.getAuthorities());
                         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(authToken);
+                        logger.info("🔐 Authentication successful for user: {}", username);
+                    } else {
+                        logger.warn("⚠️ JWT token is invalid for user: {}", username);
                     }
                 } catch (Exception e) {
-                    logger.error("Authentication failed for user: " + username, e);
+                    logger.error("❌ Failed to authenticate user: {}", username, e);
                 }
+            } else {
+                logger.info("⚠️ No valid username extracted or user already authenticated.");
             }
 
-            System.out.println("JWT: " + jwt);
-            System.out.println("Extracted username: " + username);
-            System.out.println("Is authenticated: " + (SecurityContextHolder.getContext().getAuthentication() != null));
-            
         } catch (Exception e) {
-            logger.error("Exception during authentication filter", e);
+            logger.error("💥 Exception in JWT filter", e);
         }
-        
+
         filterChain.doFilter(request, response);
     }
 }

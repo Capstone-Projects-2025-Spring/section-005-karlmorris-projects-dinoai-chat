@@ -3,74 +3,65 @@ import GlassBackground from '../components/GlassBackground';
 import api from '../api/axios';
 
 const Vocabulary = () => {
-  const [language, setLanguage] = useState('Spanish');
   const [vocabList, setVocabList] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
-  const languages = ['Spanish', 'French', 'German', 'Japanese'];
+  const [notReady, setNotReady] = useState(false);
 
   useEffect(() => {
     const fetchVocabulary = async () => {
       try {
-        const authRes = await api.get('/auth/me');
-        console.log("✅ [Frontend] Fetched user:", authRes.data);
+        const token = localStorage.getItem("token");
+        console.log("🔍 Token:", token);
 
-        const userId = authRes.data.userId;
-        if (!userId) {
-          throw new Error("User ID not found in authentication response.");
-        }
-
-        const vocabRes = await api.get(`/api/vocabulary/daily/${userId}`);
-        console.log("✅ [Frontend] Fetched vocab set:", vocabRes.data);
+        const vocabRes = await api.get(`/api/vocabulary/daily`);
+        console.log("✅ Response:", vocabRes.data);
 
         const vocabJson = vocabRes.data.vocabJson;
         if (!vocabJson) {
-          throw new Error("vocabJson missing in vocabulary response.");
+          console.error("❌ vocabJson is missing");
+          throw new Error("No vocabulary found. Chat with Dino to generate vocab.");
         }
 
         let parsed;
         try {
-          parsed = JSON.parse(vocabJson);
+          const cleaned = typeof vocabJson === "string" ? JSON.parse(vocabJson) : vocabJson;
+          parsed = Array.isArray(cleaned) ? cleaned : [];
         } catch (e) {
-          console.error("❌ Failed to parse vocabJson:", vocabJson);
-          throw new Error("Invalid JSON structure from server.");
+          console.error("❌ Failed to parse JSON:", vocabJson);
+          throw new Error("Vocabulary format is incorrect.");
         }
 
-        console.log("✅ Parsed raw vocab:", parsed);
+        console.log("✅ Parsed:", parsed);
 
         const normalized = parsed.map(entry => {
           if (typeof entry === "string" && entry.includes(":")) {
             const [word, definition] = entry.split(":");
-            return {
-              word: word.trim(),
-              definition: definition.trim(),
-              score: 0
-            };
+            return { word: word.trim(), definition: definition.trim(), score: 0 };
           } else if (entry.word && entry.definition) {
-            return {
-              ...entry,
-              score: 0
-            };
+            return { ...entry, score: 0 };
           } else {
-            console.warn("⚠️ Skipping malformed vocab entry:", entry);
             return null;
           }
         }).filter(Boolean);
 
         if (normalized.length === 0) {
-          throw new Error(
-            "We couldn't generate your flashcards yet. Try chatting with Dino so it can learn what language you're studying and suggest personalized vocabulary!"
-          );
+          console.warn("⚠️ No vocab generated. Prompt user to chat.");
+          setNotReady(true);
+          setLoading(false);
+          return;
         }
 
-        console.log("✅ Final vocab list:", normalized);
         setVocabList(normalized);
+        setCurrentIndex(0);
+        setRevealed(false);
+        setNotReady(false);
         setLoading(false);
+
       } catch (err) {
-        console.error("❌ [Frontend] Failed to load vocabulary:", err);
+        console.error("❌ Failed to fetch vocabulary:", err);
         setError(err.message || "Unknown error");
         setLoading(false);
       }
@@ -100,12 +91,29 @@ const Vocabulary = () => {
     return <div className="text-center text-xl mt-20">Loading your vocabulary...</div>;
   }
 
+  if (notReady) {
+    return (
+      <div className="text-center max-w-xl mx-auto mt-20 bg-blue-50 border border-blue-200 text-blue-900 px-6 py-6 rounded-lg shadow">
+        <h2 className="text-2xl font-bold mb-3">👋 Welcome to Vocabulary Practice!</h2>
+        <p className="text-lg mb-2">
+          We don't have any flashcards for you just yet.
+        </p>
+        <p>
+          To get started, go to the <strong>Dino chat</strong> and tell it which language you're learning. 
+          Dino will generate personalized vocabulary as you interact.
+        </p>
+        <p className="mt-3">
+          Come back here after a few messages to start studying!
+        </p>
+      </div>
+    );
+  }
+
   if (error) {
     return (
       <div className="text-center max-w-xl mx-auto mt-20 bg-yellow-100 border border-yellow-300 text-yellow-800 px-6 py-4 rounded-lg shadow">
         <h2 className="text-xl font-semibold mb-2">📚 Ready to Learn?</h2>
         <p>{error}</p>
-        <p className="mt-2">Open the Dino chat and tell it what language you're learning. After a few messages, come back here to get personalized flashcards!</p>
       </div>
     );
   }
@@ -124,21 +132,6 @@ const Vocabulary = () => {
     <GlassBackground>
       <div className="mx-auto pt-10 w-full max-w-3xl space-y-8 text-center">
         <h1 className="text-4xl font-bold text-gray-800">🧠 Vocabulary Practice</h1>
-
-        {/* Language Selector */}
-        <div className="flex justify-center">
-          <label htmlFor="language-select" className="text-lg mr-3 mt-1">Choose a language:</label>
-          <select
-            id="language-select"
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-            className="px-4 py-2 rounded-lg border border-gray-300 shadow-sm text-base"
-          >
-            {languages.map((lang) => (
-              <option key={lang} value={lang}>{lang}</option>
-            ))}
-          </select>
-        </div>
 
         {/* Progress Bar */}
         <div className="w-full max-w-md h-4 bg-gray-200 rounded-full mx-auto">
