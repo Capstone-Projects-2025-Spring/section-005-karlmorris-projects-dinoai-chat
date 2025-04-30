@@ -1,6 +1,6 @@
 package com.dino.backend.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.*; 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,10 +15,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
+    @Column(name = "user_id") 
     private Long userId;
 
     @Column(nullable = false, unique = true)
@@ -49,9 +48,4 @@ public class User {
 
     @Column(name = "reminder_interval")
     private Integer reminderInterval;
-
-    // Explicit getter for Spring Security or service layers expecting getId()
-    public Long getId() {
-        return this.userId;
-    }
 }
