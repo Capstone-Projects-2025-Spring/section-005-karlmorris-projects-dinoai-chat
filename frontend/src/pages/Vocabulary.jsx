@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import GlassBackground from '../components/GlassBackground';
 
 const Vocabulary = () => {
@@ -7,80 +7,118 @@ const Vocabulary = () => {
   const [revealed, setRevealed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [lastRefresh, setLastRefresh] = useState(null);
   
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
   // Fetch vocabulary from backend
-  useEffect(() => {
-    const fetchVocabulary = async () => {
-      try {
-        setLoading(true);
-        const token = localStorage.getItem("token");
-        if (!token) {
-          throw new Error("Please log in to view vocabulary");
-        }
-
-        // Get user ID from auth/me endpoint
-        const authRes = await fetch(`${API_BASE_URL}/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        
-        if (!authRes.ok) {
-          throw new Error(`Authentication failed: ${authRes.status}`);
-        }
-        
-        const userData = await authRes.json();
-        const userId = userData.userId;
-        if (!userId) {
-          throw new Error("User ID not found in authentication response");
-        }
-
-        // Fetch vocabulary using the user ID
-        const vocabRes = await fetch(
-          `${API_BASE_URL}/api/vocabulary/daily/${userId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        
-        if (!vocabRes.ok) {
-          throw new Error(`Failed to fetch vocabulary: ${vocabRes.status}`);
-        }
-        
-        const vocabData = await vocabRes.json();
-        
-        if (!vocabData.vocabJson) {
-          throw new Error("No vocabulary data received from server");
-        }
-        
-        // Parse the JSON string to get the actual vocabulary items
-        const parsedData = JSON.parse(vocabData.vocabJson);
-        
-        // Extract and normalize vocabulary items
-        const vocabulary = parsedData.vocabulary || [];
-        const normalizedVocab = vocabulary.map(entry => ({
-          word: entry.word.trim(),
-          definition: entry.definition.trim(),
-          mastered: false
-        }));
-        
-        if (normalizedVocab.length === 0) {
-          throw new Error("No vocabulary words found. Chat with Dino to generate personalized vocabulary!");
-        }
-        
-        setVocabList(normalizedVocab);
-        setCurrentIndex(0);
-        setRevealed(false);
-        setLoading(false);
-      } catch (err) {
-        console.error("❌ Error fetching vocabulary:", err);
-        setError(err.message);
-        setLoading(false);
+  const fetchVocabulary = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      console.log("Starting vocabulary fetch...");
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Please log in to view vocabulary");
       }
-    };
 
-    fetchVocabulary();
+      // Get user ID from auth/me endpoint
+      console.log("Fetching user data from auth/me...");
+      const authRes = await fetch(`${API_BASE_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      if (!authRes.ok) {
+        console.error("Authentication failed:", authRes.status);
+        throw new Error(`Authentication failed: ${authRes.status}`);
+      }
+      
+      const userData = await authRes.json();
+      console.log("User data received:", userData);
+      
+      const userId = userData.userId;
+      if (!userId) {
+        throw new Error("User ID not found in authentication response");
+      }
+
+      // Fetch vocabulary using the user ID
+      console.log(`Fetching vocabulary for user ID ${userId}...`);
+      const vocabRes = await fetch(
+        `${API_BASE_URL}/api/vocabulary/daily/${userId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          // Add cache-busting query param to prevent caching
+          cache: 'no-cache',
+        }
+      );
+      
+      if (!vocabRes.ok) {
+        console.error("Vocabulary fetch failed:", vocabRes.status);
+        throw new Error(`Failed to fetch vocabulary: ${vocabRes.status}`);
+      }
+      
+      const vocabData = await vocabRes.json();
+      console.log("Raw vocabulary data received:", vocabData);
+      
+      if (!vocabData.vocabJson) {
+        console.error("Vocabulary data missing vocabJson field");
+        throw new Error("No vocabulary data received from server");
+      }
+      
+      // Parse the JSON string to get the actual vocabulary items
+      let parsedData;
+      try {
+        parsedData = JSON.parse(vocabData.vocabJson);
+        console.log("Parsed vocabulary data:", parsedData);
+      } catch (err) {
+        console.error("Failed to parse vocabulary JSON:", vocabData.vocabJson, err);
+        throw new Error("Invalid vocabulary data format");
+      }
+      
+      // Extract vocabulary items with additional error handling
+      if (!parsedData.vocabulary || !Array.isArray(parsedData.vocabulary)) {
+        console.error("No vocabulary array in parsed data:", parsedData);
+        throw new Error("No vocabulary words found. Chat with Dino to generate personalized vocabulary!");
+      }
+      
+      const vocabulary = parsedData.vocabulary;
+      
+      if (vocabulary.length === 0) {
+        console.error("Vocabulary array is empty");
+        throw new Error("No vocabulary words found. Chat with Dino to generate personalized vocabulary!");
+      }
+      
+      const normalizedVocab = vocabulary.map(entry => ({
+        word: entry.word ? entry.word.trim() : "Unknown word",
+        definition: entry.definition ? entry.definition.trim() : "No definition available",
+        mastered: false
+      }));
+      
+      console.log("Normalized vocabulary:", normalizedVocab);
+      setVocabList(normalizedVocab);
+      setCurrentIndex(0);
+      setRevealed(false);
+      setLastRefresh(new Date().toLocaleTimeString());
+      setLoading(false);
+    } catch (err) {
+      console.error("❌ Error fetching vocabulary:", err);
+      setError(err.message);
+      setVocabList([]);
+      setLoading(false);
+    }
   }, [API_BASE_URL]);
+
+  // Initial fetch on component mount
+  useEffect(() => {
+    fetchVocabulary();
+  }, [fetchVocabulary]);
+
+  const refreshVocabulary = () => {
+    setLoading(true);
+    setError(null);
+    fetchVocabulary();
+  };
 
   const goToNextWord = () => {
     if (currentIndex < vocabList.length - 1) {
@@ -97,6 +135,8 @@ const Vocabulary = () => {
   };
   
   const markAsMastered = () => {
+    if (vocabList.length === 0) return;
+    
     const updatedList = [...vocabList];
     updatedList[currentIndex].mastered = !updatedList[currentIndex].mastered;
     setVocabList(updatedList);
@@ -129,11 +169,69 @@ const Vocabulary = () => {
         <div className="mx-auto pt-10 w-full max-w-3xl text-center">
           <h1 className="text-4xl font-bold text-gray-800 mb-8">Daily Vocabulary</h1>
           <div className="bg-white rounded-xl shadow-lg p-8 max-w-md mx-auto">
-            <div className="text-red-500 mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            <div className="text-center mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
               </svg>
-              <p className="text-lg font-medium">{error}</p>
+              <h2 className="text-2xl font-semibold mb-2">No Vocabulary Words Yet</h2>
+              <p className="text-gray-600">{error}</p>
+              
+              <div className="flex flex-col space-y-3 mt-6">
+                <button 
+                  onClick={refreshVocabulary}
+                  className="w-full px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Refresh Vocabulary
+                </button>
+                
+                <button 
+                  onClick={() => window.location.href = '/'}
+                  className="w-full px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  Start Chatting Now
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </GlassBackground>
+    );
+  }
+
+  if (vocabList.length === 0) {
+    return (
+      <GlassBackground>
+        <div className="mx-auto pt-10 w-full max-w-3xl text-center">
+          <h1 className="text-4xl font-bold text-gray-800 mb-8">Daily Vocabulary</h1>
+          <div className="bg-white rounded-xl shadow-lg p-8 max-w-md mx-auto">
+            <div className="text-center mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+              </svg>
+              <h2 className="text-2xl font-semibold mb-2">No Vocabulary Words Found</h2>
+              <p className="text-gray-600">Chat with Dino to generate personalized vocabulary!</p>
+              
+              <div className="flex flex-col space-y-3 mt-6">
+                <button 
+                  onClick={refreshVocabulary}
+                  className="w-full px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Refresh Vocabulary
+                </button>
+                
+                <button 
+                  onClick={() => window.location.href = '/'}
+                  className="w-full px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  Start Chatting Now
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -143,8 +241,24 @@ const Vocabulary = () => {
 
   return (
     <GlassBackground>
-      <div className="mx-auto pt-10 w-full max-w-3xl space-y-8 text-center">
-        <h1 className="text-4xl font-bold text-gray-800">Daily Vocabulary</h1>
+      <div className="mx-auto pt-10 w-full max-w-3xl space-y-6 text-center px-4">
+        <div className="flex flex-col md:flex-row justify-between items-center">
+          <h1 className="text-4xl font-bold text-gray-800">Daily Vocabulary</h1>
+          
+          <button 
+            onClick={refreshVocabulary}
+            className="mt-3 md:mt-0 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Refresh
+          </button>
+        </div>
+        
+        {lastRefresh && (
+          <p className="text-sm text-gray-500">Last updated: {lastRefresh}</p>
+        )}
 
         {/* Completion Summary */}
         <div className="bg-white rounded-xl shadow-md p-4 max-w-md mx-auto">
