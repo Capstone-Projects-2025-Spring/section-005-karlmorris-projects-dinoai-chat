@@ -14,12 +14,16 @@
 
 ## 📋 Table of Contents
 
-1. ✨ [Introduction](#introduction)
-2. ✅ [Tech Stack](#tech-stack)
-3. 🕹️ [Features](#features)
-4. 🌐 [Live Demo](#live-demo)
-5. 📱 [Screenshots](#screenshots)
-6. 🧑‍🚀 [Contributors](#contributors)
+1.  ✨ [Introduction](#introduction)
+2.  ✅ [Tech Stack](#tech-stack)
+3.  ⚙️ [Installation (Backend)](#installation-backend)
+4.  ▶️ [Running the Backend](#running-the-backend)
+5.  ⚙️ [Installation (Frontend)](#installation-frontend)
+6.  ▶️ [Running the Frontend](#running-the-frontend)
+7.  🕹️ [Features](#features)
+8.  🌐 [Live Demo](#live-demo)
+9.  📱 [Screenshots](#screenshots)
+10. 🧑‍🚀 [Contributors](#contributors)
 
 ## ✨ Introduction <a name="introduction"></a>
 
