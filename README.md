@@ -50,6 +50,105 @@ DinoAI offers real-time grammar correction, vocabulary suggestions, and performa
 ### Deployment
 - Render (Backend & Frontend)
 
+## ⚙️ Installation <a name="installation"></a>
+
+Follow these steps to set up the backend development environment.
+
+### Prerequisites
+
+*   **Git:** To clone the repository.
+*   **Java Development Kit (JDK):** Version 21 or later.
+*   **Maven:** Apache Maven build tool.
+*   **Temple University Email Account:** Required to access necessary configuration secrets.
+### Steps
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/Capstone-Projects-2025-Spring/section-005-karlmorris-projects-dinoai-chat.git
+    cd section-005-karlmorris-projects-dinoai-chat/backend
+    ```
+
+2.  **Configure Environment Variables via Google Doc:**
+    This project uses `spring-dotenv` to manage configuration via a `.env` file in the project's root directory (`backend/`). The required secrets (like database credentials and API keys) are stored in a secure Google Document accessible only via Temple University email accounts.
+
+    *   **Access the Secret Document:**
+        *   Go to: [https://docs.google.com/document/d/1W7ydmfVxAKlYkk1w-BC4p5UYtBWhDWl3nB8Djt6pULg/edit?usp=sharing](https://docs.google.com/document/d/1W7ydmfVxAKlYkk1w-BC4p5UYtBWhDWl3nB8Djt6pULg/edit?usp=sharing)
+        *   You **must** be logged into Google with a `@temple.edu` email address to view this document.
+
+    *   **Create a local `.env` file:**
+        *   In the root directory of the backend project (e.g., `backend/`), create a new file named `.env`.
+
+    *   **Populate the `.env` file:**
+        *   Copy the key-value pairs from the Google Document into your newly created `.env` file.
+        *   The structure should look similar to this (replace `<value_from_google_doc>` with the actual values you copied):
+          ```dotenv
+          # Database Configuration
+          SUPABASE_PASSWORD=<value_from_google_doc>
+          # Google Gemini API Key
+          GEMINI_API_KEY=<value_from_google_doc>
+          ```
+
+    *   **Security:** **DO NOT commit your `.env` file to Git.** Ensure that `.env` is listed in your project's `.gitignore` file.
+
+3.  **Build the Project:**
+    This step downloads dependencies, compiles the code, and packages the application.
+    ```bash
+    ./mvnw clean install -DskipTests
+    ```
+    *   This will create a JAR file in the `target/` directory.
+
+## ▶️ Running the Backend <a name="running-the-backend"></a>
+
+Once installed and configured with the `.env` file, you can run the backend server:
+
+### 1. Using Maven (Recommended for Development)
+
+This command compiles and runs the application directly using the Spring Boot Maven plugin. It uses the configuration from your `.env` file.
+
+```bash
+./mvnw spring-boot:run
+```
+
+## ⚙️ Installation (Frontend) <a name="installation-frontend"></a>
+
+Follow these steps to set up the frontend development environment.
+
+### Prerequisites (Frontend)
+
+*   **Node.js:** Version 18.x or later recommended. (Includes npm)
+*   **npm (Node Package Manager):** Comes with Node.js.
+
+### Steps (Frontend)
+
+1.  **Navigate to Frontend Directory:**
+    Make sure you are in the root directory of the cloned repository (`section-005-karlmorris-projects-dinoai-chat`).
+    ```bash
+    # Navigate into the frontend directory:
+    cd frontend
+    ```
+
+2.  **Install Dependencies:**
+    This command reads the `package.json` file and installs all the necessary libraries for the frontend.
+    ```bash
+    npm install
+    ```
+
+## ▶️ Running the Frontend <a name="running-the-frontend"></a>
+
+Once the dependencies are installed (ensure you are in the `frontend` directory):
+
+1.  **Start the Development Server:**
+
+    ```bash
+    npm run dev
+    ```
+
+2.  **Access the Frontend:**
+    *   The terminal will usually display the URL where the frontend is running.
+    *   Open your web browser and navigate to the provided URL.
+
+**Note:** For the frontend to interact correctly with the backend, the backend server must also be running (as described in the "Running the Backend" section).
+
 ## 🕹️ Features <a name="features"></a>
 
 ### Core Features
