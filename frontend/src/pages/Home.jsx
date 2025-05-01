@@ -116,18 +116,29 @@ export default function Home() {
       const rawText = result.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
       let parsedResult;
       try {
-        const cleanedText = rawText
-          .trim()
-          .replace(/^```json/, "")
-          .replace(/^```/, "")
-          .replace(/```$/, "")
-          .trim();
-        parsedResult = JSON.parse(cleanedText);
+        // Look for the last JSON object in the response
+        let jsonText = rawText;
+        
+        // Clean up markdown formatting if present
+        jsonText = jsonText.replace(/```json\n/g, "").replace(/\n```/g, "");
+        
+        // If there are multiple JSON objects, get the last complete one
+        const lastJsonStartIndex = jsonText.lastIndexOf("{");
+        if (lastJsonStartIndex !== -1) {
+          jsonText = jsonText.substring(lastJsonStartIndex);
+        }
+        
+        parsedResult = JSON.parse(jsonText);
       } catch (err) {
         console.error("❌ Failed to parse AI reply JSON:", err, "\nrawText:", rawText);
+        
+        // Fallback: Look for the conversation value directly with regex
+        const conversationMatch = rawText.match(/"conversation":\s*"([^"]+)"/);
+        const feedbackMatch = rawText.match(/"feedback":\s*"([^"]*?)"/);
+        
         parsedResult = {
-          conversation: "⚠️ DinoAI didn't return proper JSON.",
-          feedback: "[Error: Could not parse AI reply.]",
+          conversation: conversationMatch ? conversationMatch[1] : "⚠️ DinoAI didn't return proper JSON.",
+          feedback: feedbackMatch ? feedbackMatch[1] : "[Error: Could not parse AI reply.]",
         };
       }
 
@@ -138,7 +149,7 @@ export default function Home() {
       const corrections = parseCorrections(parsedResult.feedback);
 
       // Normalize the feedback text for comparison
-      const normalizedFeedback = parsedResult.feedback.trim().toLowerCase();
+      const normalizedFeedback = parsedResult.feedback ? parsedResult.feedback.trim().toLowerCase() : "";
 
       let feedbackAlertType;
       if (normalizedFeedback.includes("no correction needed") || corrections.length === 0) {
